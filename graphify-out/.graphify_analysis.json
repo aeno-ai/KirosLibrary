@@ -1,0 +1,124 @@
+{
+  "communities": {
+    "0": [
+      "ref_react",
+      "ref_react_dom",
+      "src_app",
+      "src_app_app",
+      "src_assets_hero",
+      "src_assets_react",
+      "src_assets_vite",
+      "src_index",
+      "src_main"
+    ],
+    "1": [
+      "package",
+      "package_name",
+      "package_private",
+      "package_type",
+      "package_version",
+      "ref_oxlint",
+      "ref_types_react",
+      "ref_types_react_dom"
+    ],
+    "2": [
+      "oxlintrc",
+      "oxlintrc_plugins",
+      "oxlintrc_rules",
+      "oxlintrc_rules_react_only_export_components",
+      "oxlintrc_rules_react_rules_of_hooks",
+      "oxlintrc_schema"
+    ],
+    "3": [
+      "package_devdependencies",
+      "package_devdependencies_oxlint",
+      "package_devdependencies_types_react",
+      "package_devdependencies_types_react_dom",
+      "package_devdependencies_vite",
+      "package_devdependencies_vitejs_plugin_react"
+    ],
+    "4": [
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_lint",
+      "package_scripts_preview"
+    ],
+    "5": [
+      "package_dependencies",
+      "package_dependencies_react",
+      "package_dependencies_react_dom"
+    ],
+    "6": [
+      "ref_vite",
+      "ref_vitejs_plugin_react",
+      "vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.2777777777777778,
+    "1": 0.25,
+    "2": 0.3333333333333333,
+    "3": 0.3333333333333333,
+    "4": 0.4,
+    "5": 0.6666666666666666,
+    "6": 0.6666666666666666
+  },
+  "gods": [
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 5
+    },
+    {
+      "id": "oxlintrc_rules",
+      "label": "rules",
+      "degree": 3
+    },
+    {
+      "id": "ref_react",
+      "label": "react",
+      "degree": 3
+    },
+    {
+      "id": "ref_react_dom",
+      "label": "react-dom",
+      "degree": 2
+    },
+    {
+      "id": "ref_vitejs_plugin_react",
+      "label": "@vitejs/plugin-react",
+      "degree": 2
+    },
+    {
+      "id": "ref_vite",
+      "label": "vite",
+      "degree": 2
+    },
+    {
+      "id": "src_app_app",
+      "label": "App()",
+      "degree": 2
+    },
+    {
+      "id": "oxlintrc_schema",
+      "label": "$schema",
+      "degree": 1
+    },
+    {
+      "id": "oxlintrc_plugins",
+      "label": "plugins",
+      "degree": 1
+    },
+    {
+      "id": "oxlintrc_rules_react_rules_of_hooks",
+      "label": "react/rules-of-hooks",
+      "degree": 1
+    }
+  ],
+  "surprises": [],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

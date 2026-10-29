@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 
 *.env
+
+# other env files (keep the example one)
+.env.*
+!.env.example
+
+# tool output
+graphify-out/

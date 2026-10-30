@@ -104,7 +104,10 @@ export default function Folder() {
         <ul className="folders">
           {children.map((c) => (
             <li key={c.id} className="folder-card">
-              <Link to={`/c/${c.id}`}><Icon name="folder" /> {c.name}</Link>
+              <Link to={`/c/${c.id}`}>
+                <Icon name="folder" />
+                <span className="folder-name">{c.name}</span>
+              </Link>
               <SavedItemActions itemType="folder" itemId={c.id} label={`folder ${c.name}`} />
             </li>
           ))}

@@ -33,24 +33,36 @@ export default function SavedItemCards({ rows, onReload }) {
           const label = sourceLabel(saved.item_type, source)
           const missing = !source?.id
           const itemLabel = `${saved.item_type} “${label}”`
+          const cardContent = (
+            <>
+              <span className="saved-item-kind">
+                <Icon name={typeIcon(saved.item_type)} />
+              </span>
+              <span className="saved-item-copy">
+                <strong className="saved-item-name">{label}</strong>
+                <span className="saved-item-type">
+                  {missing ? 'No longer exists' : saved.item_type}
+                </span>
+              </span>
+            </>
+          )
           return (
             <article key={`${saved.item_type}-${saved.item_id}`} className={`saved-item-card${missing ? ' missing' : ''}`}>
-              <span className="saved-item-type"><Icon name={typeIcon(saved.item_type)} /> {saved.item_type}</span>
               {missing ? (
-                <span className="saved-item-open muted">This item no longer exists.</span>
+                <div className="saved-item-main muted">{cardContent}</div>
               ) : saved.item_type === 'folder' ? (
-                <Link to={`/c/${source.id}`} className="saved-item-open">{label}</Link>
+                <Link to={`/c/${source.id}`} className="saved-item-main">{cardContent}</Link>
               ) : (
                 <button
                   type="button"
-                  className="saved-item-open"
+                  className="saved-item-main"
                   onClick={() => {
                     if (saved.item_type === 'file') setOpenFile(source)
                     if (saved.item_type === 'note') setOpenNote(source)
                     if (saved.item_type === 'link') setOpenLink(source)
                   }}
                 >
-                  {label}
+                  {cardContent}
                 </button>
               )}
               <SavedItemActions itemType={saved.item_type} itemId={saved.item_id} label={itemLabel} />

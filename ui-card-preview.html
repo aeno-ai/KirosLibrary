@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/index.css" />
+    <title>Card preview</title>
+  </head>
+  <body>
+    <main class="page stack">
+      <h1>Our Library</h1>
+      <section class="quick-access">
+        <h2>Quick Access</h2>
+        <div class="saved-items-grid">
+          <article class="saved-item-card missing">
+            <div class="saved-item-main muted">
+              <span class="saved-item-kind">□</span>
+              <span class="saved-item-copy"><strong class="saved-item-name">Deleted folder</strong><span class="saved-item-type">No longer exists</span></span>
+            </div>
+            <span class="saved-item-controls"><span class="saved-item-buttons"><button class="saved-item-action favorite active">♥</button><button class="saved-item-action pin active">⌖</button></span></span>
+          </article>
+          <article class="saved-item-card">
+            <button class="saved-item-main">
+              <span class="saved-item-kind">□</span>
+              <span class="saved-item-copy"><strong class="saved-item-name">Misha</strong><span class="saved-item-type">Folder</span></span>
+            </button>
+            <span class="saved-item-controls"><span class="saved-item-buttons"><button class="saved-item-action favorite active">♥</button><button class="saved-item-action pin active">⌖</button></span></span>
+          </article>
+        </div>
+      </section>
+      <ul class="folders">
+        <li class="folder-card"><a href="#">□ <span class="folder-name">Misha</span></a><span class="saved-item-controls"><span class="saved-item-buttons"><button class="saved-item-action favorite active">♥</button><button class="saved-item-action pin active">⌖</button></span></span></li>
+        <li class="folder-card"><a href="#">□ <span class="folder-name">UPANG STUFF WE CAN SHARE</span></a><span class="saved-item-controls"><span class="saved-item-buttons"><button class="saved-item-action favorite">♡</button><button class="saved-item-action pin">⌖</button></span></span></li>
+      </ul>
+    </main>
+    <pre id="metrics"></pre>
+    <script>
+      const quick = document.querySelector('.quick-access')
+      const folderGrid = document.querySelector('.folders')
+      document.querySelector('#metrics').textContent = JSON.stringify({
+        innerWidth: window.innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        quickWidth: quick.getBoundingClientRect().width,
+        quickRight: quick.getBoundingClientRect().right,
+        folderWidth: folderGrid.getBoundingClientRect().width,
+        columns: getComputedStyle(folderGrid).gridTemplateColumns,
+      })
+    </script>
+  </body>
+</html>

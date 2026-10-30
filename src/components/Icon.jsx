@@ -56,8 +56,8 @@ const PATHS = {
   ),
   pin: (
     <>
-      <path d="m9 3 6 6-2 2 4 4-2 2-4-4-5 1 3-5-2-2z" />
-      <path d="m12 17-5 5" />
+      <path d="M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5Z" />
+      <path d="M12 13v8" />
     </>
   ),
   search: (
@@ -76,13 +76,14 @@ const PATHS = {
 
 export default function Icon({ name, size = '1em', className = '', label, filled = false }) {
   const path = PATHS[name] ?? PATHS.document
+  const solid = filled && name === 'heart'
   return (
     <svg
       className={`icon ${className}`.trim()}
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
+      fill={solid ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"

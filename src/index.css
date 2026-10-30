@@ -431,8 +431,8 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  min-height: 3.4rem;
-  padding: 0.7rem 0.9rem;
+  min-height: 4.25rem;
+  padding: 0.65rem 0.85rem;
   border: 2px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
@@ -455,7 +455,13 @@ button:disabled {
 }
 
 .folder-card > a {
-  padding-right: 5.5rem;
+  padding-right: 5.65rem;
+}
+
+.folder-name {
+  min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- gallery ---------- */
@@ -722,59 +728,75 @@ progress {
 }
 
 .saved-item-card {
-  display: grid;
+  position: relative;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'type actions'
-    'open actions';
-  align-items: center;
-  gap: 0.2rem 0.65rem;
-  padding: 0.75rem 0.85rem;
+  min-height: 4.25rem;
   border: 2px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
+  overflow: visible;
 }
 
 .saved-item-card.missing {
   border-style: dashed;
+  background: color-mix(in srgb, var(--card) 94%, var(--muted));
 }
 
-.saved-item-type {
-  grid-area: type;
-  display: inline-flex;
+.saved-item-main {
+  display: flex;
+  width: 100%;
+  min-height: 4rem;
   min-width: 0;
   align-items: center;
-  gap: 0.3rem;
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 800;
-  text-transform: capitalize;
-}
-
-.saved-item-open {
-  grid-area: open;
-  width: 100%;
-  min-height: 36px;
-  overflow-wrap: anywhere;
+  gap: 0.65rem;
+  padding: 0.55rem 5.65rem 0.55rem 0.65rem;
   border: none;
-  border-radius: 9px;
-  padding: 0.25rem 0;
+  border-radius: calc(var(--radius) - 2px);
   background: none;
   color: var(--fg);
-  font-weight: 800;
   text-align: left;
   text-decoration: none;
 }
 
-a.saved-item-open {
-  display: block;
+.saved-item-kind {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1.1rem;
 }
 
-.saved-item-open:not(.muted):hover,
-.saved-item-open:not(.muted):focus-visible {
+.saved-item-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.08rem;
+  line-height: 1.2;
+}
+
+.saved-item-name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.saved-item-type {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.saved-item-main:not(.muted):hover,
+.saved-item-main:not(.muted):focus-visible {
   color: var(--accent);
-  text-decoration: underline;
 }
 
 .saved-item-controls {
@@ -787,8 +809,10 @@ a.saved-item-open {
 }
 
 .saved-item-card > .saved-item-controls {
-  grid-area: actions;
-  align-self: center;
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
 }
 
 .saved-item-buttons {
@@ -802,9 +826,9 @@ a.saved-item-open {
 
 .saved-item-action {
   display: inline-grid;
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
   place-items: center;
   padding: 0;
   border: 0;
@@ -844,12 +868,13 @@ a.saved-item-open {
 }
 
 .folder-card .saved-item-action {
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
 }
 
-.folder-card .saved-item-error {
+.folder-card .saved-item-error,
+.saved-item-card .saved-item-error {
   position: absolute;
   right: 0;
   top: calc(100% + 0.15rem);
@@ -890,9 +915,34 @@ a.saved-item-open {
     transform: none;
   }
 
-  .saved-item-open:hover:not(:disabled) {
+  .saved-item-main:hover:not(:disabled) {
     box-shadow: none;
     transform: none;
+  }
+}
+
+/* Keep cards readable and tap targets comfortable on phones. A single card
+   column also prevents the action pill from crowding long folder names. */
+@media (max-width: 560px) {
+  .folders,
+  .saved-items-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quick-access {
+    padding: 0.75rem;
+  }
+
+  .folder-card > a,
+  .saved-item-main {
+    padding-right: 6.25rem;
+  }
+
+  .saved-item-action,
+  .folder-card .saved-item-action {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
   }
 }
 

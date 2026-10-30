@@ -51,8 +51,14 @@ async function selectSources(table, columns, ids) {
   )
   try {
     const results = await Promise.all(
-      chunks.map((chunk) => unwrap(supabase.from(table).select(columns).in('id', chunk))),
-    )
+chunks.map(async (chunk) =>
+  unwrap(
+    await supabase
+      .from(table)
+      .select(columns)
+      .in('id', chunk)
+  )
+),    )
     // A saved reference can outlive its source row. Keep malformed or partial
     // API results from reaching a card that expects a real source id.
     return results.flat().filter((row) => row?.id)

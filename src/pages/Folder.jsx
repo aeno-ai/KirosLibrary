@@ -4,6 +4,7 @@ import Breadcrumbs from '../components/Breadcrumbs'
 import Cat from '../components/Dog'
 import Loading from '../components/Loading'
 import Gallery from '../components/Gallery'
+import LinkDialog from '../components/LinkDialog'
 import NameDialog from '../components/NameDialog'
 import NoteEditor from '../components/NoteEditor'
 import UploadButton from '../components/UploadButton'
@@ -23,8 +24,8 @@ export default function Folder() {
   const { categories, error: loadError, reload } = useCategories()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [dialog, setDialog] = useState(null) // null | 'new' | 'rename' | 'note'
-  // Bumped after an upload or a new note; part of the Gallery's key so it reloads.
+  const [dialog, setDialog] = useState(null) // null | 'new' | 'rename' | 'note' | 'link'
+  // Bumped after an upload or new card; part of the Gallery's key so it reloads.
   const [changes, setChanges] = useState(0)
 
   if (loadError) return <p className="error">{loadError}</p>
@@ -110,7 +111,7 @@ export default function Folder() {
         </div>
       )}
 
-      {/* Files and notes always belong to a folder, so the top level has none. */}
+      {/* Files, notes, and links belong to folders, so the top level has none. */}
       {current && (
         <>
           {/* The add buttons. On phones .add-bar floats bottom-right, within
@@ -118,6 +119,9 @@ export default function Folder() {
           <div className="add-bar">
             <button className="fab note-fab" onClick={() => setDialog('note')}>
               📝 Note
+            </button>
+            <button className="fab link-fab" onClick={() => setDialog('link')}>
+              🔗 Link
             </button>
             <UploadButton categoryId={id} onUploaded={() => setChanges((n) => n + 1)} />
           </div>
@@ -140,6 +144,14 @@ export default function Folder() {
       {dialog === 'note' && (
         <NoteEditor
           note={null}
+          categoryId={id}
+          onSaved={() => setChanges((n) => n + 1)}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'link' && (
+        <LinkDialog
+          link={null}
           categoryId={id}
           onSaved={() => setChanges((n) => n + 1)}
           onClose={() => setDialog(null)}

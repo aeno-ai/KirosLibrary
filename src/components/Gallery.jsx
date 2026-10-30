@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isImage, listFiles, signedUrls } from '../lib/files'
+import { listLinks } from '../lib/links'
 import { listNotes, noteTitle } from '../lib/notes'
 import { retryFailed } from '../lib/sync'
 import { useQueue } from '../lib/useQueue'
 import Cat from './Dog'
 import FileViewer from './FileViewer'
+import LinkDialog from './LinkDialog'
 import Loading from './Loading'
 import NoteEditor from './NoteEditor'
 
@@ -30,6 +32,7 @@ export default function Gallery({ categoryId, upTo }) {
   const queueIds = useRef(new Set())
   const [files, setFiles] = useState(null)
   const [notes, setNotes] = useState([])
+  const [links, setLinks] = useState([])
   const [thumbs, setThumbs] = useState(new Map())
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(false)
@@ -37,19 +40,21 @@ export default function Gallery({ categoryId, upTo }) {
   const [retryError, setRetryError] = useState('')
   const [open, setOpen] = useState(null) // the file shown in the viewer
   const [openNote, setOpenNote] = useState(null) // the note shown in the editor
+  const [openLink, setOpenLink] = useState(null) // the selected link's actions
   const fileLoadVersion = useRef(0)
 
   useEffect(() => {
     let ignore = false
     const request = ++fileLoadVersion.current
-    // Promise.all runs both requests at the same time and waits for both.
-    Promise.all([loadPage(categoryId, 0), listNotes(categoryId)]).then(
-      ([result, folderNotes]) => {
+    // Load the folder's first file page and its small text/link rows together.
+    Promise.all([loadPage(categoryId, 0), listNotes(categoryId), listLinks(categoryId)]).then(
+      ([result, folderNotes, folderLinks]) => {
         if (ignore || request !== fileLoadVersion.current) return
         setFiles(result.rows)
         setThumbs(result.thumbs)
         setHasMore(result.hasMore)
         setNotes(folderNotes)
+        setLinks(folderLinks)
       },
       (e) => !ignore && request === fileLoadVersion.current && setError(e.message),
     )
@@ -111,6 +116,15 @@ export default function Gallery({ categoryId, upTo }) {
     setOpenNote(null)
   }
 
+  function handleLinkSaved(saved) {
+    setLinks((prev) => [saved, ...prev.filter((link) => link.id !== saved.id)])
+  }
+
+  function handleLinkRemoved(link) {
+    setLinks((prev) => prev.filter((item) => item.id !== link.id))
+    setOpenLink(null)
+  }
+
   if (error) return <p className="error">{error}</p>
   if (!files) return <Loading text="Fetching your files…" />
 
@@ -124,12 +138,23 @@ export default function Gallery({ categoryId, upTo }) {
           <span className="small">Back</span>
         </Link>
 
-        {/* Notes come right after Back, then files. */}
+        {/* Notes and links come right after Back, then files. */}
         {notes.map((n) => (
           <button key={n.id} className="tile note-tile" onClick={() => setOpenNote(n)}>
             <strong>📝 {noteTitle(n)}</strong>
             {/* Under a real title, show the start of the text. */}
             {n.title.trim() && <span className="snippet">{n.body}</span>}
+          </button>
+        ))}
+
+        {links.map((link) => (
+          <button
+            key={link.id}
+            className="tile link-tile"
+            onClick={() => setOpenLink(link)}
+            title={link.title}
+          >
+            <strong>🔗 {link.title}</strong>
           </button>
         ))}
 
@@ -171,10 +196,10 @@ export default function Gallery({ categoryId, upTo }) {
 
       {(queueError || retryError) && <p className="error">{queueError || retryError}</p>}
 
-      {files.length === 0 && notes.length === 0 && folderQueueItems.length === 0 && (
+      {files.length === 0 && notes.length === 0 && links.length === 0 && folderQueueItems.length === 0 && (
         <div className="empty">
           <Cat name="sleep" size={130} label="sleeping cat" />
-          <p className="muted">Nothing here yet. Upload some files or write a note!</p>
+          <p className="muted">Nothing here yet. Add a file, note, or link!</p>
         </div>
       )}
 
@@ -197,6 +222,15 @@ export default function Gallery({ categoryId, upTo }) {
           onRemoved={handleNoteRemoved}
           onMoved={handleNoteRemoved}
           onClose={() => setOpenNote(null)}
+        />
+      )}
+
+      {openLink && (
+        <LinkDialog
+          link={openLink}
+          onSaved={handleLinkSaved}
+          onRemoved={handleLinkRemoved}
+          onClose={() => setOpenLink(null)}
         />
       )}
     </>

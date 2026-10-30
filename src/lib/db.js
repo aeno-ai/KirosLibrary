@@ -15,6 +15,10 @@ function friendlyMessage(error) {
     case '23514': // check_violation: the message names the broken constraint
       if (error.message.includes('notes_not_empty')) return 'A note needs a title or some text.'
       if (error.message.includes('notes_')) return 'That note is too long.'
+      if (error.message.includes('links_title_not_empty')) return 'A link needs a name.'
+      if (error.message.includes('links_title_length')) return 'Link names can be up to 200 characters.'
+      if (error.message.includes('links_url_length')) return 'Links can be up to 2,048 characters.'
+      if (error.message.includes('links_url_protocol')) return 'Links must start with http:// or https://.'
       return 'Names must be 1 to 100 characters.'
     default:
       return error.message

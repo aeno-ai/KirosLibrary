@@ -20,7 +20,7 @@ The code itself has comments on the unusual parts. This doc is the map, and the 
          ▼                      ▼           ▼
   InfinityFree             Supabase (one project)
   (just a file host)       ├─ Auth      : who are you? (2 accounts)
-  serves index.html,       ├─ Postgres  : categories + files tables
+  serves index.html,       ├─ Postgres  : categories, files, notes + links
   JS, CSS, icons           │              guarded by RLS
   ONCE per visit           └─ Storage   : the real image/PDF bytes,
                                           private bucket "library"
@@ -63,6 +63,8 @@ The code itself has comments on the unusual parts. This doc is the map, and the 
 | `db.js` | `unwrap()` turns Supabase's `{ data, error }` replies into normal values or thrown errors, and translates Postgres error codes into friendly messages. |
 | `categories.js` | Category CRUD, plus the helpers `childrenOf()` and `pathTo()` and the `useCategories()` hook. |
 | `files.js` | Prepare and upload queued files, list with paging, signed URLs, move, search, delete. |
+| `notes.js` | Create, list, edit, move, delete, and search folder notes. |
+| `links.js` | Create, list, edit, and delete folder links; allows only HTTP(S) URLs. |
 | `images.js` | Compresses images and makes thumbnails in the browser using a `<canvas>`. |
 | `queue.js` | Persists prepared uploads in IndexedDB and notifies subscribers when they change. |
 | `sync.js` | Uploads queued files one at a time, retries after reconnecting, and records failures. |
@@ -92,6 +94,7 @@ The code itself has comments on the unusual parts. This doc is the map, and the 
 | `Breadcrumbs.jsx` | Folder | "Library / Screenshots / 2026" links. |
 | `UploadButton.jsx` | Folder | Prepares selected files and adds them to the offline upload queue. |
 | `Gallery.jsx` | Folder | Thumbnail grid, "Load more", opens the viewer. |
+| `LinkDialog.jsx` | Folder, Gallery | Creates/edits a titled link, or offers Edit, Open, and Delete actions. |
 | `FileViewer.jsx` | Gallery, Search | Popup with the full image, download, move, delete. |
 | `MovePicker.jsx` | FileViewer | Folder browser for choosing where to move a file. |
 
@@ -234,9 +237,11 @@ Offline, `files.js` can't get new signed URLs, so it builds token-less URLs (`of
 ### Supabase (once)
 1. **Project Settings → API Keys:** the URL in `.env` must look like `https://<project-ref>.supabase.co`. That's the *API* URL, not the dashboard page address.
 2. **SQL Editor → New query:** paste all of `supabase/schema.sql` → Run.
-3. **Authentication → Sign In / Providers:** turn **off** "Allow new users to sign up".
-4. **Authentication → Users → Add user** twice (one per person), with "Auto Confirm User" ticked.
-5. After deploying: **Authentication → URL Configuration**, set Site URL to your InfinityFree `https://` address.
+3. Run `supabase/02-notes.sql` to create the notes table and shared `touch_updated_at` trigger.
+4. Run `supabase/03-links.sql` to enable link cards.
+5. **Authentication → Sign In / Providers:** turn **off** "Allow new users to sign up".
+6. **Authentication → Users → Add user** twice (one per person), with "Auto Confirm User" ticked.
+7. After deploying: **Authentication → URL Configuration**, set Site URL to your InfinityFree `https://` address.
 
 ### Run locally
 ```

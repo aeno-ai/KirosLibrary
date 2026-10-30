@@ -26,6 +26,9 @@
   --note-bg: #fff3b8; /* sticky-note yellow */
   --note-fg: #4a3b12;
   --note-edge: #f3d36b;
+  --link-bg: #e6f7e9;
+  --link-fg: #194d27;
+  --link-edge: #67b879;
 
   --radius: 16px;
   --tap: 44px; /* Apple's minimum comfortable touch target */
@@ -48,6 +51,9 @@
     --note-bg: #4a3f1f;
     --note-fg: #fff1c2;
     --note-edge: #6b5a24;
+    --link-bg: #203d29;
+    --link-fg: #d7f5dc;
+    --link-edge: #5da96f;
   }
 }
 
@@ -548,6 +554,12 @@ progress {
   border: 2px solid var(--note-edge);
 }
 
+.fab.link-fab {
+  background: var(--link-bg);
+  color: var(--link-fg);
+  border: 2px solid var(--link-edge);
+}
+
 /* Upload progress / errors pop up as a small card above the buttons. */
 .add-bar-card {
   width: min(78vw, 280px);
@@ -613,6 +625,38 @@ progress {
   white-space: pre-line; /* keep the note's own line breaks */
   -webkit-line-clamp: 5;
   line-clamp: 5;
+}
+
+.link-tile {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0.6rem;
+  text-align: left;
+  background: var(--link-bg);
+  color: var(--link-fg);
+  border-color: var(--link-edge);
+}
+
+.link-tile strong {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0.45rem 1.1rem;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
 }
 
 .note-editor .note-title {

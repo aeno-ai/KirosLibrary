@@ -4,7 +4,6 @@ import Layout from './components/Layout'
 import Folder from './pages/Folder'
 import Login from './pages/Login'
 import Search from './pages/Search'
-import SavedItems from './pages/SavedItems'
 import { SavedItemsProvider } from './saved/SavedItemsProvider'
 
 export default function App() {
@@ -19,8 +18,7 @@ export default function App() {
           {/* :id is a URL parameter, read with useParams() in Folder. */}
           <Route path="c/:id" element={<Folder />} />
           <Route path="search" element={<Search />} />
-          <Route path="favorites" element={<SavedItems />} />
-          <Route path="pinned" element={<SavedItems mode="pins" />} />
+          <Route path="pinned" element={<SavedItems />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -33,24 +33,12 @@ async function setFlag(itemType, itemId, flag, value) {
   if (error) throw new Error(error.message)
 }
 
-export function addFavorite(itemType, itemId) {
-  return setFlag(itemType, itemId, 'favorite', true)
-}
-
-export function removeFavorite(itemType, itemId) {
-  return setFlag(itemType, itemId, 'favorite', false)
-}
-
 export function pinItem(itemType, itemId) {
   return setFlag(itemType, itemId, 'pinned', true)
 }
 
 export function unpinItem(itemType, itemId) {
   return setFlag(itemType, itemId, 'pinned', false)
-}
-
-export function isFavorited(items, itemType, itemId) {
-  return Boolean(items?.find((item) => item.item_type === itemType && item.item_id === itemId)?.is_favorite)
 }
 
 export function isPinned(items, itemType, itemId) {

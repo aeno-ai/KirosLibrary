@@ -97,9 +97,6 @@ export default function Layout() {
           ) : (
             <span className="sync-pill" role="status" aria-live="polite">{syncStatus}</span>
           )}
-          <Link to="/favorites" className="icon-link favorites-nav" title="Favorites" aria-label="Favorites">
-            <Icon name="heart" /><span className="wide-only small"> Favorites</span>
-          </Link>
           {/* On phones only the sign-out icon shows; aria-label keeps it readable for
               screen readers, which don't see what CSS hides visually. */}
           <button

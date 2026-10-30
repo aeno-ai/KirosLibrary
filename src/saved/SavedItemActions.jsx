@@ -4,27 +4,16 @@ import Icon from '../components/Icon'
 export default function SavedItemActions({ itemType, itemId, label }) {
   const {
     loading,
-    isFavorite,
     isPinned,
     isPending,
     operationError,
-    setFavorite,
     setPinned,
   } = useSavedItems()
-  const favorite = isFavorite(itemType, itemId)
   const pinned = isPinned(itemType, itemId)
   const favoriteBusy = isPending(itemType, itemId, 'favorite')
   const pinBusy = isPending(itemType, itemId, 'pinned')
   const favoriteError = operationError(itemType, itemId, 'favorite')
   const pinError = operationError(itemType, itemId, 'pinned')
-
-  async function toggleFavorite() {
-    try {
-      await setFavorite(itemType, itemId, !favorite)
-    } catch {
-      // The hook stores a compact error next to the control that failed.
-    }
-  }
 
   async function togglePinned() {
     try {

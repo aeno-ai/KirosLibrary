@@ -51,7 +51,9 @@ alter table public.categories enable row level security;
 alter table public.files enable row level security;
 
 -- Table privileges come before RLS: a role needs GRANT to touch the table at
--- all, then RLS filters which rows. Granted only to authenticated, never anon.
+-- all, then RLS filters which rows. Supabase grants new tables to anon (the
+-- logged-out role) by default; take that away so anon is blocked twice.
+revoke all on public.categories, public.files from anon;
 grant select, insert, update, delete on public.categories to authenticated;
 grant select, insert, update, delete on public.files to authenticated;
 

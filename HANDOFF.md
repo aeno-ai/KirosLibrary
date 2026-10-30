@@ -20,7 +20,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P4 | Upload, gallery, thumbnails | DONE |
 | P5 | Move and search files | DONE |
 | P6 | PWA: manifest, icons, service worker | DONE |
-| P7 | Deploy prep: .htaccess, InfinityFree upload steps | TODO |
+| P7 | Deploy prep: .htaccess, InfinityFree upload steps | DONE |
 
 ## Later (after the core app works)
 - Love notes: banner and Realtime first

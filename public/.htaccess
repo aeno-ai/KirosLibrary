@@ -1,0 +1,30 @@
+# Apache settings for InfinityFree. Vite copies everything in public/ into
+# dist/, so this ends up next to index.html in htdocs/.
+
+RewriteEngine On
+
+# 1) Force HTTPS. InfinityFree sits behind a proxy, so the original protocol
+#    arrives in the X-Forwarded-Proto header; %{HTTPS} alone isn't reliable.
+#    Only if neither says https: redirect (301 = permanent) to the https URL.
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 2) Single-page app routing. There is no real file called /c/123 or /search;
+#    React Router draws those pages in the browser. So: if the request is not
+#    an existing file (!-f) or folder (!-d), serve index.html and let React
+#    read the URL. Without this, refreshing any page but / gives a 404.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
+
+# Apache doesn't know the .webmanifest extension by default.
+AddType application/manifest+json .webmanifest
+
+# Always re-check these two with the server, so a new deploy is picked up
+# right away (the browser also checks sw.js for updates on every launch).
+<IfModule mod_headers.c>
+  <FilesMatch "^(sw\.js|index\.html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

@@ -1,6 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+// Self-hosted fonts (from npm, not Google's servers): they get bundled with the
+// app, so the service worker caches them and they still work offline.
+// Only the Latin character set and the weights we actually use.
+import '@fontsource/nunito/latin-400.css'
+import '@fontsource/nunito/latin-700.css'
+import '@fontsource/nunito/latin-800.css'
+import '@fontsource/fredoka/latin-600.css'
+import '@fontsource/fredoka/latin-700.css'
 import './index.css'
 import App from './App.jsx'
 import AuthProvider from './auth/AuthProvider'

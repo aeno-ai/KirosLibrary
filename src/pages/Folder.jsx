@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Gallery from '../components/Gallery'
+import NameDialog from '../components/NameDialog'
 import UploadButton from '../components/UploadButton'
 import {
   childrenOf,
@@ -17,9 +18,9 @@ export default function Folder() {
   const { id = null } = useParams()
   const navigate = useNavigate()
   const { categories, error: loadError, reload } = useCategories()
-  const [newName, setNewName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [dialog, setDialog] = useState(null) // null | 'new' | 'rename'
   // Bumped after each upload; part of the Gallery's key so it reloads.
   const [uploads, setUploads] = useState(0)
 
@@ -30,7 +31,7 @@ export default function Folder() {
   if (id && !current) {
     return (
       <p>
-        This category doesn't exist anymore. <Link to="/">Back to the library</Link>
+        This folder doesn't exist anymore. <Link to="/">Back to the library</Link>
       </p>
     )
   }
@@ -38,13 +39,26 @@ export default function Folder() {
   const children = childrenOf(categories, id)
   const path = pathTo(categories, id)
 
-  // Runs an action, shows its error if it fails, then refreshes the list.
-  async function run(action) {
+  // NameDialog shows any error thrown here, so no try/catch needed.
+  async function handleCreate(name) {
+    await createCategory(name, id)
+    await reload()
+  }
+
+  async function handleRename(name) {
+    if (name !== current.name) await renameCategory(id, name)
+    await reload()
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete "${current.name}"?`)) return
     setBusy(true)
     setError('')
     try {
-      await action()
+      await deleteCategory(id)
       await reload()
+      // The page we're on is gone, so go up one level.
+      navigate(current.parent_id ? `/c/${current.parent_id}` : '/')
     } catch (e) {
       setError(e.message)
     } finally {
@@ -52,39 +66,19 @@ export default function Folder() {
     }
   }
 
-  function handleCreate(e) {
-    e.preventDefault()
-    if (!newName.trim()) return
-    run(async () => {
-      await createCategory(newName, id)
-      setNewName('')
-    })
-  }
-
-  function handleRename() {
-    const name = window.prompt('New name', current.name)
-    if (name && name.trim() !== current.name) run(() => renameCategory(id, name))
-  }
-
-  function handleDelete() {
-    if (!window.confirm(`Delete "${current.name}"?`)) return
-    run(async () => {
-      await deleteCategory(id)
-      // The page we're on is gone, so go up one level.
-      navigate(current.parent_id ? `/c/${current.parent_id}` : '/')
-    })
-  }
-
   return (
     <>
       {current && <Breadcrumbs path={path} />}
 
-      <div className="row">
-        <h1>{current ? current.name : 'Library'}</h1>
+      <div className="row title-row">
+        <h1>{current ? current.name : 'Our Library'}</h1>
         <span className="spacer" />
+        <button onClick={() => setDialog('new')} disabled={busy}>
+          ＋ New folder
+        </button>
         {current && (
           <>
-            <button onClick={handleRename} disabled={busy}>
+            <button onClick={() => setDialog('rename')} disabled={busy}>
               Rename
             </button>
             <button className="danger" onClick={handleDelete} disabled={busy}>
@@ -100,35 +94,46 @@ export default function Folder() {
         <ul className="folders">
           {children.map((c) => (
             <li key={c.id}>
-              <Link to={`/c/${c.id}`}>📁 {c.name}</Link>
+              <Link to={`/c/${c.id}`}>🌸 {c.name}</Link>
             </li>
           ))}
         </ul>
       )}
 
-      <form className="row" onSubmit={handleCreate}>
-        <input
-          style={{ flex: 1, width: 'auto' }}
-          placeholder={current ? 'New subcategory' : 'New category'}
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          maxLength={100}
-        />
-        <button type="submit" disabled={busy || !newName.trim()}>
-          Add
-        </button>
-      </form>
-
       {!current && children.length === 0 && (
-        <p className="muted">No categories yet. Create one to start uploading.</p>
+        <div className="empty">
+          <p className="muted">No folders yet. Make one to start uploading!</p>
+        </div>
       )}
 
       {/* Files always belong to a category, so the top level has none. */}
       {current && (
         <>
           <UploadButton categoryId={id} onUploaded={() => setUploads((n) => n + 1)} />
-          <Gallery key={`${id}:${uploads}`} categoryId={id} />
+          <Gallery
+            key={`${id}:${uploads}`}
+            categoryId={id}
+            upTo={current.parent_id ? `/c/${current.parent_id}` : '/'}
+          />
         </>
+      )}
+
+      {dialog === 'new' && (
+        <NameDialog
+          title={current ? `New folder in ${current.name}` : 'New folder'}
+          submitLabel="Create"
+          onSubmit={handleCreate}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'rename' && (
+        <NameDialog
+          title="Rename folder"
+          initial={current.name}
+          submitLabel="Save"
+          onSubmit={handleRename}
+          onClose={() => setDialog(null)}
+        />
       )}
     </>
   )

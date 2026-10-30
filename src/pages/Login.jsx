@@ -28,8 +28,9 @@ export default function Login() {
   }
 
   return (
-    <main className="login">
-      <h1>Kiro's Library</h1>
+    <main className="login card">
+      <h1>Kiro's Library 💕</h1>
+      <p className="muted">Welcome back, cutie</p>
       <form onSubmit={handleSubmit} className="stack">
         <label>
           Email
@@ -52,7 +53,7 @@ export default function Login() {
           />
         </label>
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={busy}>
+        <button type="submit" className="primary" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
       </form>

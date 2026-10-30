@@ -22,7 +22,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
   return (
     <div className="stack">
       {progress ? (
-        <div>
+        <div className="upload-progress">
           <progress value={progress.done} max={progress.total} />
           <p className="muted small">
             Uploading {progress.done} / {progress.total}… keep the app open.
@@ -30,9 +30,10 @@ export default function UploadButton({ categoryId, onUploaded }) {
         </div>
       ) : (
         // A <label> wrapping a hidden file input: tapping the label opens the
-        // picker, so it can be styled like a normal button.
-        <label className="row">
-          <span className="primary-button">Upload files</span>
+        // picker, so it can be styled like a button. On phones .upload-fab
+        // floats it bottom-right, within easy reach of a thumb.
+        <label className="upload-fab">
+          ＋ Upload
           <input type="file" multiple accept={ACCEPT} onChange={handleChange} hidden />
         </label>
       )}

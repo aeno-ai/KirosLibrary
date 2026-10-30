@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { Link, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function Layout() {
   const session = useSession()
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
 
   async function handleSignOut() {
     // Wipe the offline copies of lists and images kept by the service worker
@@ -34,23 +37,44 @@ export default function Layout() {
         <Link to="/" className="brand">
           Kiro's Library
         </Link>
-        <form onSubmit={handleSearch} role="search" style={{ flex: 1, maxWidth: 320 }}>
+        {/* className="search"/"actions" place these in the header grid
+            (see .topbar in index.css): one row on wide screens, two on phones. */}
+        <form className="search" onSubmit={handleSearch} role="search">
           <input
             name="q"
             type="search"
-            placeholder="Search files"
+            placeholder="🔍 Search files"
             // defaultValue (not value): the browser owns the text, React only
             // sets the starting value. Fine here since we only read it on submit.
             defaultValue={params.get('q') ?? ''}
           />
         </form>
-        <button className="link" onClick={handleSignOut} title={session.user.email}>
-          Sign out
-        </button>
+        <div className="actions">
+          {/* On phones only the 💗 shows; aria-label keeps it readable for
+              screen readers, which don't see what CSS hides visually. */}
+          <button
+            className="link icon-link"
+            onClick={() => setConfirmingSignOut(true)}
+            title={session.user.email}
+            aria-label="Sign out"
+          >
+            💗<span className="wide-only small"> Sign out</span>
+          </button>
+        </div>
       </header>
       <main className="page">
         <Outlet />
       </main>
+
+      {confirmingSignOut && (
+        <ConfirmDialog
+          title="Sign out?"
+          message={`You're signed in as ${session.user.email}. Pictures saved for offline viewing will be cleared from this device.`}
+          confirmLabel="Sign out"
+          onConfirm={handleSignOut}
+          onClose={() => setConfirmingSignOut(false)}
+        />
+      )}
     </>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { isImage, listFiles, signedUrls } from '../lib/files'
 import FileViewer from './FileViewer'
 
@@ -12,7 +13,8 @@ async function loadPage(categoryId, page) {
 // The parent renders this with key={categoryId + upload count}. A new key
 // makes React throw this component away and mount a fresh one, so all the
 // state below resets without any manual "clear everything" code.
-export default function Gallery({ categoryId }) {
+// upTo: the URL of the parent folder, for the "Up" card.
+export default function Gallery({ categoryId, upTo }) {
   const [files, setFiles] = useState(null)
   const [thumbs, setThumbs] = useState(new Map())
   const [page, setPage] = useState(0)
@@ -58,11 +60,17 @@ export default function Gallery({ categoryId }) {
 
   if (error) return <p className="error">{error}</p>
   if (!files) return <p className="muted">Loading files…</p>
-  if (files.length === 0) return <p className="muted">No files here yet.</p>
 
   return (
     <>
       <div className="gallery">
+        {/* Always the first card: goes up to the parent folder. No history
+            needs recording; every folder knows its parent_id. */}
+        <Link to={upTo} className="tile up-tile" title="Go up one folder">
+          <span aria-hidden="true">⬆</span>
+          <span className="small">Back</span>
+        </Link>
+
         {files.map((f) => (
           <button key={f.id} className="tile" onClick={() => setOpen(f)} title={f.filename}>
             {thumbs.get(f.thumb_path) ? (
@@ -77,6 +85,12 @@ export default function Gallery({ categoryId }) {
           </button>
         ))}
       </div>
+
+      {files.length === 0 && (
+        <div className="empty">
+          <p className="muted">No files here yet. Tap ＋ Upload to add some!</p>
+        </div>
+      )}
 
       {hasMore && <button onClick={loadMore}>Load more</button>}
 

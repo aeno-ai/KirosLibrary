@@ -21,8 +21,9 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P5 | Move and search files | DONE |
 | P6 | PWA: manifest, icons, service worker | DONE |
 | P7 | Deploy prep: .htaccess, InfinityFree upload steps | DONE |
-
-## Later (after the core app works)
-- Love notes: banner and Realtime first
-- Offline-first upload queue with resumable (TUS) uploads and sync badges
-- Web push through a Supabase Edge Function
+| P8 | Carnation pink theme, responsive layout, New folder dialog, Back tile, sign-out confirm | DONE |
+| P9 | Lottie cats | TODO |
+| P10 | Love notes: banner + Realtime | TODO |
+| P11 | Offline-first upload queue + resumable (TUS) uploads | TODO |
+| P12 | Web push for notes via Supabase Edge Function | TODO |
+| P13 | Docs update | TODO |

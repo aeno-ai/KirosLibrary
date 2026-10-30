@@ -28,17 +28,6 @@ export default function SavedItemActions({ itemType, itemId, label }) {
       <span className="saved-item-buttons" aria-label={`Save ${label}`}>
         <button
           type="button"
-          className={`saved-item-action favorite${favorite ? ' active' : ''}`}
-          onClick={toggleFavorite}
-          disabled={loading || favoriteBusy}
-          aria-label={`${favorite ? 'Remove' : 'Add'} ${label} ${favorite ? 'from' : 'to'} Favorites`}
-          aria-pressed={favorite}
-          title={favorite ? 'Remove from Favorites' : 'Add to Favorites'}
-        >
-          <Icon name="heart" filled={favorite} />
-        </button>
-        <button
-          type="button"
           className={`saved-item-action pin${pinned ? ' active' : ''}`}
           onClick={togglePinned}
           disabled={loading || pinBusy}

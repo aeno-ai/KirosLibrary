@@ -5,6 +5,7 @@ import Folder from './pages/Folder'
 import Login from './pages/Login'
 import Search from './pages/Search'
 import { SavedItemsProvider } from './saved/SavedItemsProvider'
+import SavedItems from './pages/SavedItems'
 
 export default function App() {
   return (

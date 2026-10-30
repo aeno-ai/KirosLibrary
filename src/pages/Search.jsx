@@ -43,7 +43,10 @@ export default function Search() {
       <h1>Results for “{q}”</h1>
       {error && <p className="error">{error}</p>}
       {!results && !error && <p className="muted">Searching…</p>}
-      {results?.length === 0 && <p className="muted">No files match.</p>}
+      {results?.length === 0 && <p className="muted">No files match.</p>
+      
+      
+      }
 
       {results?.length > 0 && (
         <ul className="results">

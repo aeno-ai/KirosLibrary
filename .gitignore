@@ -31,3 +31,5 @@ dist-ssr
 
 # tool output
 graphify-out/
+
+/supabase/

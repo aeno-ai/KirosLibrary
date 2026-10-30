@@ -2,6 +2,8 @@
 -- Run after schema.sql through 04-RLS.sql in Supabase > SQL Editor.
 -- This file is safe to run again. Do not run it from the browser.
 
+begin;
+
 create table if not exists public.saved_items (
   -- This is deliberately separate from the shared library records. A member
   -- can only ever see and change their own rows, after passing the library
@@ -71,13 +73,17 @@ create policy "saved_items_delete_own" on public.saved_items
 -- Change exactly one flag without trusting a user id supplied by the browser.
 -- It is one transaction, so changing a heart cannot remove a concurrently
 -- changed pin, and a row disappears as soon as both flags are false.
-create or replace function public.set_saved_item_flag(
+-- The browser only needs success or an error, so this returns void. Returning
+-- fields named is_favorite/is_pinned would collide with the table columns in
+-- PL/pgSQL and can produce "column reference is_favorite is ambiguous".
+drop function if exists public.set_saved_item_flag(text, uuid, text, boolean);
+create function public.set_saved_item_flag(
   p_item_type text,
   p_item_id uuid,
   p_flag text,
   p_value boolean
 )
-returns table (is_favorite boolean, is_pinned boolean)
+returns void
 language plpgsql
 security invoker
 set search_path = ''
@@ -126,7 +132,6 @@ begin
       for update;
 
     if not found then
-      return query select false, false;
       return;
     end if;
 
@@ -149,9 +154,11 @@ begin
     end if;
   end if;
 
-  return query select saved_item.is_favorite, saved_item.is_pinned;
+  return;
 end;
 $$;
 
 revoke all on function public.set_saved_item_flag(text, uuid, text, boolean) from public;
 grant execute on function public.set_saved_item_flag(text, uuid, text, boolean) to authenticated;
+
+commit;

@@ -8,7 +8,7 @@ import NoteEditor from '../components/NoteEditor'
 import SavedItemActions from './SavedItemActions'
 
 function sourceLabel(itemType, source) {
-  if (!source) return `Deleted ${itemType}`
+  if (!source?.id) return `Deleted ${itemType}`
   if (itemType === 'folder') return source.name
   if (itemType === 'file') return source.filename
   if (itemType === 'note') return noteTitle(source)
@@ -31,7 +31,7 @@ export default function SavedItemCards({ rows, onReload }) {
       <div className="saved-items-grid">
         {rows.map(({ saved, source }) => {
           const label = sourceLabel(saved.item_type, source)
-          const missing = !source
+          const missing = !source?.id
           const itemLabel = `${saved.item_type} “${label}”`
           return (
             <article key={`${saved.item_type}-${saved.item_id}`} className={`saved-item-card${missing ? ' missing' : ''}`}>

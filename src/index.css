@@ -423,7 +423,7 @@ button:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 0.6rem;
 }
 
@@ -455,7 +455,7 @@ button:disabled {
 }
 
 .folder-card > a {
-  padding-right: 5.2rem;
+  padding-right: 5.5rem;
 }
 
 /* ---------- gallery ---------- */
@@ -717,16 +717,20 @@ progress {
 
 .saved-items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 0.6rem;
 }
 
 .saved-item-card {
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.7rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'type actions'
+    'open actions';
+  align-items: center;
+  gap: 0.2rem 0.65rem;
+  padding: 0.75rem 0.85rem;
   border: 2px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
@@ -737,6 +741,11 @@ progress {
 }
 
 .saved-item-type {
+  grid-area: type;
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.3rem;
   color: var(--muted);
   font-size: 0.74rem;
   font-weight: 800;
@@ -744,8 +753,9 @@ progress {
 }
 
 .saved-item-open {
+  grid-area: open;
   width: 100%;
-  min-height: var(--tap);
+  min-height: 36px;
   overflow-wrap: anywhere;
   border: none;
   border-radius: 9px;
@@ -770,31 +780,43 @@ a.saved-item-open {
 .saved-item-controls {
   display: inline-flex;
   min-width: 0;
+  flex: 0 0 auto;
   align-items: flex-end;
   flex-direction: column;
   gap: 0.25rem;
 }
 
+.saved-item-card > .saved-item-controls {
+  grid-area: actions;
+  align-self: center;
+}
+
 .saved-item-buttons {
   display: inline-flex;
-  gap: 0.25rem;
+  gap: 0.1rem;
+  padding: 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 88%, var(--accent-soft));
 }
 
 .saved-item-action {
   display: inline-grid;
-  width: 36px;
-  min-height: 36px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
   place-items: center;
   padding: 0;
+  border: 0;
   border-radius: 50%;
-  font-size: 1.2rem;
+  background: transparent;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
 .saved-item-action.favorite.active {
-  border-color: #ef709f;
-  background: #ffe3ee;
-  color: #d6336c;
+  background: color-mix(in srgb, #ef709f 24%, var(--card));
+  color: var(--accent);
 }
 
 .saved-item-action.pin.active {
@@ -813,15 +835,18 @@ a.saved-item-open {
 .folder-card > .saved-item-controls {
   position: absolute;
   top: 50%;
-  right: 0.35rem;
+  right: 0.45rem;
   transform: translateY(-50%);
 }
 
+.folder-card .saved-item-buttons {
+  box-shadow: none;
+}
+
 .folder-card .saved-item-action {
-  width: 32px;
-  min-height: 32px;
-  border-width: 1px;
-  background: var(--card);
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
 }
 
 .folder-card .saved-item-error {
@@ -856,6 +881,19 @@ a.saved-item-open {
 
 .saved-items-empty {
   margin: 0;
+}
+
+@media (hover: hover) {
+  .saved-item-action:hover:not(:disabled) {
+    background: var(--accent-soft);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .saved-item-open:hover:not(:disabled) {
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 /* ---------- Kiro mascot ---------- */
@@ -1021,7 +1059,7 @@ dialog::backdrop {
   }
 
   .folders {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   }
 
   .gallery {

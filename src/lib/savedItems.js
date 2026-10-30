@@ -64,13 +64,16 @@ async function selectSources(table, columns, ids) {
   const results = await Promise.all(
     chunks.map((chunk) => unwrap(supabase.from(table).select(columns).in('id', chunk))),
   )
-  return results.flat()
+  // A saved reference can outlive its source row. Keep malformed or partial
+  // API results from reaching a card that expects a real source id.
+  return results.flat().filter((row) => row?.id)
 }
 
 // Resolve the four source tables in batches, never once per saved card.
 export async function resolveSavedItemSources(items) {
   const idsByType = Object.fromEntries([...TYPES].map((type) => [type, []]))
-  items.forEach((item) => idsByType[item.item_type]?.push(item.item_id))
+  const validItems = items.filter((item) => TYPES.has(item?.item_type) && item?.item_id)
+  validItems.forEach((item) => idsByType[item.item_type].push(item.item_id))
 
   const [folders, files, notes, links] = await Promise.all([
     selectSources('categories', 'id, name, parent_id', idsByType.folder),
@@ -86,5 +89,8 @@ export async function resolveSavedItemSources(items) {
     ['link', links],
   ].forEach(([type, rows]) => rows.forEach((row) => sources.set(savedItemKey(type, row.id), row)))
 
-  return items.map((saved) => ({ saved, source: sources.get(savedItemKey(saved.item_type, saved.item_id)) ?? null }))
+  return validItems.map((saved) => ({
+    saved,
+    source: sources.get(savedItemKey(saved.item_type, saved.item_id)) ?? null,
+  }))
 }

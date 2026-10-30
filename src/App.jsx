@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import RequireAuth from './auth/RequireAuth'
 import Layout from './components/Layout'
-import Home from './pages/Home'
+import Folder from './pages/Folder'
 import Login from './pages/Login'
 
 export default function App() {
@@ -12,7 +12,9 @@ export default function App() {
           header, then the matching page renders inside Layout's <Outlet />. */}
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<Folder />} />
+          {/* :id is a URL parameter, read with useParams() in Folder. */}
+          <Route path="c/:id" element={<Folder />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

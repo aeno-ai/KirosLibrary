@@ -1,4 +1,4 @@
-import { BUCKET, supabase } from './supabase'
+import { BUCKET, SUPABASE_URL, supabase } from './supabase'
 import { unwrap } from './db'
 import { prepareFile } from './images'
 
@@ -122,19 +122,35 @@ export async function listFiles(categoryId, page) {
   return { rows: rows.slice(0, PAGE_SIZE), hasMore: rows.length > PAGE_SIZE }
 }
 
+// Offline, nothing can be signed. This builds the same URL without a token.
+// Supabase itself would reject it, but it never gets that far: the service
+// worker (public/sw.js) caches files by path and ignores the token, so it
+// answers from its cache for anything viewed before.
+const offlineUrl = (path) => `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${path}`
+
 // The bucket is private, so <img src> needs a signed URL: a link with a
 // token that expires (here after 1 hour). One request signs the whole batch.
 export async function signedUrls(paths) {
   const wanted = paths.filter(Boolean)
   if (wanted.length === 0) return new Map()
-  const results = unwrap(await storage().createSignedUrls(wanted, 3600))
-  return new Map(results.filter((r) => r.signedUrl).map((r) => [r.path, r.signedUrl]))
+  const { data, error } = await storage().createSignedUrls(wanted, 3600)
+  if (error) {
+    if (!navigator.onLine) return new Map(wanted.map((p) => [p, offlineUrl(p)]))
+    throw new Error(error.message)
+  }
+  return new Map(data.filter((r) => r.signedUrl).map((r) => [r.path, r.signedUrl]))
 }
 
 // { download } makes the link save the file under its original name.
+// Returns null for a download link while offline.
 export async function fileUrl(file, { download = false } = {}) {
   const options = download ? { download: file.filename } : undefined
-  return unwrap(await storage().createSignedUrl(file.storage_path, 3600, options)).signedUrl
+  const { data, error } = await storage().createSignedUrl(file.storage_path, 3600, options)
+  if (error) {
+    if (!navigator.onLine) return download ? null : offlineUrl(file.storage_path)
+    throw new Error(error.message)
+  }
+  return data.signedUrl
 }
 
 export async function deleteFile(file) {

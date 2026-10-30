@@ -19,7 +19,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P3 | Categories: create, rename, delete, nesting, breadcrumbs | DONE |
 | P4 | Upload, gallery, thumbnails | DONE |
 | P5 | Move and search files | DONE |
-| P6 | PWA: manifest, icons, service worker | TODO |
+| P6 | PWA: manifest, icons, service worker | DONE |
 | P7 | Deploy prep: .htaccess, InfinityFree upload steps | TODO |
 
 ## Later (after the core app works)

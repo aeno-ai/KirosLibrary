@@ -7,6 +7,18 @@ export default function Layout() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
 
+  async function handleSignOut() {
+    // Wipe the offline copies of lists and images kept by the service worker
+    // (public/sw.js), so nothing private stays on the device after logging out.
+    // The app shell cache is kept; it contains no personal data.
+    if ('caches' in window) {
+      for (const key of await caches.keys()) {
+        if (key.startsWith('data-') || key.startsWith('media-')) await caches.delete(key)
+      }
+    }
+    await supabase.auth.signOut()
+  }
+
   function handleSearch(e) {
     e.preventDefault()
     // FormData reads the form's inputs by their name attribute, so the input
@@ -32,7 +44,7 @@ export default function Layout() {
             defaultValue={params.get('q') ?? ''}
           />
         </form>
-        <button className="link" onClick={() => supabase.auth.signOut()} title={session.user.email}>
+        <button className="link" onClick={handleSignOut} title={session.user.email}>
           Sign out
         </button>
       </header>

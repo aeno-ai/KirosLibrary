@@ -80,7 +80,15 @@ export default function Gallery({ categoryId }) {
 
       {hasMore && <button onClick={loadMore}>Load more</button>}
 
-      {open && <FileViewer file={open} onClose={() => setOpen(null)} onRemoved={handleRemoved} />}
+      {open && (
+        <FileViewer
+          file={open}
+          onClose={() => setOpen(null)}
+          onRemoved={handleRemoved}
+          // A moved file no longer belongs in this folder, same as a deleted one.
+          onMoved={handleRemoved}
+        />
+      )}
     </>
   )
 }

@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { deleteFile, fileUrl, isImage } from '../lib/files'
+import MovePicker from './MovePicker'
 
-export default function FileViewer({ file, onClose, onRemoved }) {
+// onRemoved(file) after a delete, onMoved(file, newCategoryId) after a move.
+export default function FileViewer({ file, onClose, onRemoved, onMoved }) {
   const dialogRef = useRef(null)
   const [url, setUrl] = useState(null)
   const [downloadUrl, setDownloadUrl] = useState(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [moving, setMoving] = useState(false)
 
   // <dialog> is the browser's built-in modal: showModal() dims the page,
   // traps focus inside, and closes on Esc. A ref gives us the real DOM
@@ -55,14 +58,20 @@ export default function FileViewer({ file, onClose, onRemoved }) {
 
         {error && <p className="error">{error}</p>}
 
-        {url && isImage(file) && <img src={url} alt={file.filename} />}
-        {url && !isImage(file) && (
-          <a href={url} target="_blank" rel="noreferrer">
-            Open {file.filename}
-          </a>
+        {moving ? (
+          <MovePicker file={file} onMoved={onMoved} onCancel={() => setMoving(false)} />
+        ) : (
+          <>
+            {url && isImage(file) && <img src={url} alt={file.filename} />}
+            {url && !isImage(file) && (
+              <a href={url} target="_blank" rel="noreferrer">
+                Open {file.filename}
+              </a>
+            )}
+          </>
         )}
 
-        <div className="row">
+        <div className="row" hidden={moving}>
           <span className="muted small">
             {(file.size_bytes / 1024 / 1024).toFixed(1)} MB ·{' '}
             {new Date(file.created_at).toLocaleDateString()}
@@ -73,6 +82,9 @@ export default function FileViewer({ file, onClose, onRemoved }) {
               Download
             </a>
           )}
+          <button onClick={() => setMoving(true)} disabled={busy}>
+            Move
+          </button>
           <button className="danger" onClick={handleDelete} disabled={busy}>
             Delete
           </button>

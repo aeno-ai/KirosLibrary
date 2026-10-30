@@ -29,6 +29,13 @@
   box-sizing: border-box;
 }
 
+/* The hidden attribute is just "display: none" in the browser's own
+   stylesheet, so any class that sets display (like .row's flex) beats it.
+   This makes hidden always win. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);

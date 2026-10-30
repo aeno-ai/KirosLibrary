@@ -3,6 +3,7 @@ import RequireAuth from './auth/RequireAuth'
 import Layout from './components/Layout'
 import Folder from './pages/Folder'
 import Login from './pages/Login'
+import Search from './pages/Search'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route index element={<Folder />} />
           {/* :id is a URL parameter, read with useParams() in Folder. */}
           <Route path="c/:id" element={<Folder />} />
+          <Route path="search" element={<Search />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -143,3 +143,25 @@ export async function deleteFile(file) {
   unwrap(await supabase.from('files').delete().eq('id', file.id))
   await storage().remove([file.storage_path, file.thumb_path].filter(Boolean))
 }
+
+// Moving is only a database update: the stored file's path has no category in it.
+export async function moveFile(file, categoryId) {
+  unwrap(await supabase.from('files').update({ category_id: categoryId }).eq('id', file.id))
+}
+
+export async function searchFiles(term) {
+  // In ILIKE patterns % means "anything" and _ means "any one character".
+  // Escape them (and the escape char \ itself) so typing "50%" finds a
+  // literal "50%" instead of matching everything that starts with 50.
+  const escaped = term.replace(/[\\%_]/g, (c) => `\\${c}`)
+  return unwrap(
+    await supabase
+      .from('files')
+      // "categories(id, name)" is a join done for us: Supabase follows the
+      // category_id foreign key and nests the category inside each row.
+      .select('*, categories(id, name)')
+      .ilike('filename', `%${escaped}%`) // ilike = case-insensitive LIKE
+      .order('created_at', { ascending: false })
+      .limit(100),
+  )
+}

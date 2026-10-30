@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
+import Cat from '../components/Dog'
+import Loading from '../components/Loading'
 import Gallery from '../components/Gallery'
 import NameDialog from '../components/NameDialog'
 import UploadButton from '../components/UploadButton'
@@ -25,7 +27,7 @@ export default function Folder() {
   const [uploads, setUploads] = useState(0)
 
   if (loadError) return <p className="error">{loadError}</p>
-  if (!categories) return <p className="muted">Loading…</p>
+  if (!categories) return <Loading />
 
   const current = id ? categories.find((c) => c.id === id) : null
   if (id && !current) {
@@ -102,6 +104,7 @@ export default function Folder() {
 
       {!current && children.length === 0 && (
         <div className="empty">
+          <Cat name="sleep" size={150} label="sleeping cat" />
           <p className="muted">No folders yet. Make one to start uploading!</p>
         </div>
       )}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
+import Cat from '../components/Dog'
 
 export default function Login() {
   const session = useSession()
@@ -29,6 +30,7 @@ export default function Login() {
 
   return (
     <main className="login card">
+      <Cat name="wave" size={130} />
       <h1>Kiro's Library 💕</h1>
       <p className="muted">Welcome back, cutie</p>
       <form onSubmit={handleSubmit} className="stack">

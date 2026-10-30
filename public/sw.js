@@ -8,7 +8,7 @@
 
 // Bump VERSION whenever this file's logic changes; activate() then deletes
 // the old caches.
-const VERSION = 'v1'
+const VERSION = 'v2'
 const SHELL = `shell-${VERSION}` // index.html + the built JS/CSS
 const DATA = `data-${VERSION}` // Supabase API reads (category and file lists)
 const MEDIA = `media-${VERSION}` // thumbnails and full images
@@ -62,6 +62,8 @@ self.addEventListener('fetch', (event) => {
     // Built files have a content hash in their name (index-DjWwUsgN.js): a
     // name never changes content, so the cached copy is always right.
     event.respondWith(cacheFirst(request, SHELL, request))
+  } else if (url.origin === self.location.origin && url.pathname.startsWith('/cats/')) {
+    event.respondWith(staleWhileRevalidate(request, SHELL))
   } else if (url.pathname.startsWith('/rest/v1/')) {
     // Supabase database reads: fresh when online, last copy when offline.
     event.respondWith(networkFirst(request, DATA, request))
@@ -69,6 +71,26 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(cachedMedia(url))
   }
 })
+
+// Cat animations: answer instantly from the cache, and quietly fetch a fresh
+// copy in the background for next time ("stale-while-revalidate"). If you
+// swap a cat file for a new one, it shows up on the following launch.
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName)
+  const cached = await cache.match(request)
+  const refresh = fetch(request)
+    .then((response) => {
+      // A missing cat file gets index.html back (the SPA rewrite, status 200),
+      // so check that it really is JSON before caching it.
+      if (response.ok && response.headers.get('content-type')?.includes('json')) {
+        cache.put(request, response.clone())
+      }
+      return response
+    })
+    // Offline: fall back to the cache, or a network error if never cached.
+    .catch(() => cached ?? Response.error())
+  return cached ?? refresh
+}
 
 async function networkFirst(request, cacheName, cacheKey) {
   const cache = await caches.open(cacheName)

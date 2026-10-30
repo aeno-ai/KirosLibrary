@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isImage, listFiles, signedUrls } from '../lib/files'
+import Cat from './Dog'
 import FileViewer from './FileViewer'
+import Loading from './Loading'
 
 // Loads one page of files plus signed URLs for their thumbnails.
 async function loadPage(categoryId, page) {
@@ -59,7 +61,7 @@ export default function Gallery({ categoryId, upTo }) {
   }
 
   if (error) return <p className="error">{error}</p>
-  if (!files) return <p className="muted">Loading files…</p>
+  if (!files) return <Loading text="Fetching your files…" />
 
   return (
     <>
@@ -88,6 +90,7 @@ export default function Gallery({ categoryId, upTo }) {
 
       {files.length === 0 && (
         <div className="empty">
+          <Cat name="sleep" size={130} label="sleeping cat" />
           <p className="muted">No files here yet. Tap ＋ Upload to add some!</p>
         </div>
       )}

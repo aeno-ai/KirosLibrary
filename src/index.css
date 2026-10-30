@@ -366,6 +366,10 @@ button:disabled {
   text-align: center;
 }
 
+.login .cat {
+  align-self: center;
+}
+
 .login label {
   display: flex;
   flex-direction: column;

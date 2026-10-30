@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
+import Cat from './Dog'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function Layout() {
@@ -35,6 +36,7 @@ export default function Layout() {
     <>
       <header className="topbar">
         <Link to="/" className="brand">
+          <Cat name="peek" size={36} label="" />
           Kiro's Library
         </Link>
         {/* className="search"/"actions" place these in the header grid

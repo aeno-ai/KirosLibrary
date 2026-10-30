@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ACCEPT, uploadMany } from '../lib/files'
+import Cat from './Dog'
 
 export default function UploadButton({ categoryId, onUploaded }) {
   const [progress, setProgress] = useState(null) // { done, total } while busy
@@ -23,6 +24,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
     <div className="stack">
       {progress ? (
         <div className="upload-progress">
+          <Cat name="walk" size={70} label="cat walking while uploading" />
           <progress value={progress.done} max={progress.total} />
           <p className="muted small">
             Uploading {progress.done} / {progress.total}… keep the app open.

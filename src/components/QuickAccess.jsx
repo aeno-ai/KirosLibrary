@@ -13,7 +13,7 @@ export default function QuickAccess() {
   return (
     <section className="quick-access" aria-labelledby="quick-access-heading">
       <div className="row">
-        <h2 id="quick-access-heading">Quick Access</h2>
+        <h2 id="quick-access-heading">Pinned Items</h2>
         <span className="spacer" />
         {hasMore && <Link to="/pinned" className="small">View all pins</Link>}
       </div>

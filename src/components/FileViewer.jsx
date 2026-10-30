@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { deleteFile, fileUrl, isImage } from '../lib/files'
+import { deleteFile, fileUrl, isImage, moveFile } from '../lib/files'
 import MovePicker from './MovePicker'
 
 // onRemoved(file) after a delete, onMoved(file, newCategoryId) after a move.
@@ -59,7 +59,14 @@ export default function FileViewer({ file, onClose, onRemoved, onMoved }) {
         {error && <p className="error">{error}</p>}
 
         {moving ? (
-          <MovePicker file={file} onMoved={onMoved} onCancel={() => setMoving(false)} />
+          <MovePicker
+            currentCategoryId={file.category_id}
+            onMove={async (to) => {
+              await moveFile(file, to)
+              onMoved(file, to)
+            }}
+            onCancel={() => setMoving(false)}
+          />
         ) : (
           <>
             {url && isImage(file) && <img src={url} alt={file.filename} />}

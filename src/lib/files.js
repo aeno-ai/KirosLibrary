@@ -1,5 +1,5 @@
 import { BUCKET, SUPABASE_URL, supabase } from './supabase'
-import { unwrap } from './db'
+import { escapeLike, unwrap } from './db'
 import { prepareFile } from './images'
 
 // Must match file_size_limit and allowed_mime_types in supabase/schema.sql.
@@ -166,10 +166,7 @@ export async function moveFile(file, categoryId) {
 }
 
 export async function searchFiles(term) {
-  // In ILIKE patterns % means "anything" and _ means "any one character".
-  // Escape them (and the escape char \ itself) so typing "50%" finds a
-  // literal "50%" instead of matching everything that starts with 50.
-  const escaped = term.replace(/[\\%_]/g, (c) => `\\${c}`)
+  const escaped = escapeLike(term) // see db.js: makes % and _ literal
   return unwrap(
     await supabase
       .from('files')

@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { childrenOf, pathTo, useCategories } from '../lib/categories'
-import { moveFile } from '../lib/files'
+import Loading from './Loading'
 
-// Shown inside the file viewer. You drill into folders like a file explorer,
-// then press "Move here".
-export default function MovePicker({ file, onMoved, onCancel }) {
+// Folder browser used by the file viewer and the note editor. You drill into
+// folders like a file explorer, then press "Move here". It doesn't know what
+// is being moved: it just calls onMove(folderId), and the caller does the rest.
+export default function MovePicker({ currentCategoryId, onMove, onCancel }) {
   const { categories, error: loadError } = useCategories()
-  const [at, setAt] = useState(file.category_id) // folder currently browsed
+  const [at, setAt] = useState(currentCategoryId) // folder currently browsed
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
   if (loadError) return <p className="error">{loadError}</p>
-  if (!categories) return <p className="muted">Loading…</p>
+  if (!categories) return <Loading />
 
   const path = pathTo(categories, at)
   const here = path.at(-1) // .at(-1) = last item of the array
@@ -20,8 +21,7 @@ export default function MovePicker({ file, onMoved, onCancel }) {
   async function handleMove() {
     setBusy(true)
     try {
-      await moveFile(file, at)
-      onMoved(file, at)
+      await onMove(at)
     } catch (e) {
       setError(e.message)
       setBusy(false)
@@ -37,27 +37,34 @@ export default function MovePicker({ file, onMoved, onCancel }) {
       <ul className="picker">
         {at && (
           <li>
-            <button onClick={() => setAt(here.parent_id)}>⬆ Up</button>
+            <button type="button" onClick={() => setAt(here.parent_id)}>
+              ⬆ Up
+            </button>
           </li>
         )}
         {children.map((c) => (
           <li key={c.id}>
-            <button onClick={() => setAt(c.id)}>📁 {c.name}</button>
+            <button type="button" onClick={() => setAt(c.id)}>
+              🌸 {c.name}
+            </button>
           </li>
         ))}
-        {children.length === 0 && <li className="muted small">No subcategories.</li>}
+        {children.length === 0 && <li className="muted small">No folders inside.</li>}
       </ul>
 
       {error && <p className="error">{error}</p>}
 
       <div className="row">
-        <button onClick={onCancel}>Cancel</button>
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
         <span className="spacer" />
-        {/* Files must live in a category, and moving to the same place is pointless. */}
+        {/* Everything must live in a folder, and moving to the same place is pointless. */}
         <button
+          type="button"
           className="primary"
           onClick={handleMove}
-          disabled={busy || !at || at === file.category_id}
+          disabled={busy || !at || at === currentCategoryId}
         >
           Move here
         </button>

@@ -45,7 +45,7 @@ export default function Layout() {
           <input
             name="q"
             type="search"
-            placeholder="🔍 Search files"
+            placeholder="🔍 Search files & notes"
             // defaultValue (not value): the browser owns the text, React only
             // sets the starting value. Fine here since we only read it on submit.
             defaultValue={params.get('q') ?? ''}

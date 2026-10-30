@@ -24,6 +24,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P8 | Carnation pink theme, responsive layout, New folder dialog, Back tile, sign-out confirm | DONE |
 | P9 | Lottie cats (component file is Dog.jsx) | DONE |
 | P10 | Love notes: built, then removed at Aeno's request (reverted) | DROPPED |
+| P10b | Notes in folders: add, edit, move, delete, search (run supabase/02-notes.sql) | DONE |
 | P11 | Offline-first upload queue + resumable (TUS) uploads | TODO |
 | P12 | Web push for notes | DROPPED (no notes) |
 | P13 | Docs update | TODO |

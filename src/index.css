@@ -23,6 +23,9 @@
   --danger: #c92a2a;
   --shadow: 0 6px 20px rgb(214 51 108 / 0.12);
   --paw: rgb(255 166 201 / 0.28);
+  --note-bg: #fff3b8; /* sticky-note yellow */
+  --note-fg: #4a3b12;
+  --note-edge: #f3d36b;
 
   --radius: 16px;
   --tap: 44px; /* Apple's minimum comfortable touch target */
@@ -42,6 +45,9 @@
     --danger: #ff8787;
     --shadow: 0 6px 20px rgb(0 0 0 / 0.35);
     --paw: rgb(255 143 184 / 0.07);
+    --note-bg: #4a3f1f;
+    --note-fg: #fff1c2;
+    --note-edge: #6b5a24;
   }
 }
 
@@ -504,20 +510,29 @@ progress {
   accent-color: var(--accent);
 }
 
-/* ---------- upload button ---------- */
+/* ---------- add bar: 📝 Note + ＋ Upload ---------- */
 
-/* Phones: a round-cornered button floating bottom-right, above the iPhone
-   home bar, so it's reachable with a thumb from anywhere on the page. */
-.upload-fab {
+/* Phones: a column of buttons floating bottom-right, above the iPhone home
+   bar, reachable with a thumb from anywhere on the page. FAB = "floating
+   action button". */
+.add-bar {
   position: fixed;
   right: 1rem;
   bottom: calc(1rem + env(safe-area-inset-bottom));
   z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.fab {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  min-height: 56px;
+  min-height: 52px;
   padding: 0 1.3rem;
+  border: none;
   border-radius: 999px;
   background: var(--accent);
   color: var(--on-accent);
@@ -526,11 +541,89 @@ progress {
   cursor: pointer;
 }
 
+/* The note button is the "secondary" one: same shape, sticky-note colours. */
+.fab.note-fab {
+  background: var(--note-bg);
+  color: var(--note-fg);
+  border: 2px solid var(--note-edge);
+}
+
+/* Upload progress / errors pop up as a small card above the buttons. */
+.add-bar-card {
+  width: min(78vw, 280px);
+  padding: 0.7rem 0.9rem;
+}
+
+.add-bar-card ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
 .upload-progress {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
+}
+
+.upload-progress p {
+  margin: 0;
+}
+
+/* ---------- notes ---------- */
+
+/* A note in the grid: same square as a file tile, styled as a sticky note. */
+.note-tile {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  background: var(--note-bg);
+  color: var(--note-fg);
+  border-color: var(--note-edge);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+/* -webkit-line-clamp: cut the text after N lines and add "…". */
+.note-tile strong,
+.note-tile .snippet {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* In a flex column, children shrink when space runs out. The title must never
+   shrink (that cuts letters in half); only the snippet gives way. */
+.note-tile strong {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.note-tile .snippet {
+  min-height: 0;
+  font-size: 0.74rem;
+  opacity: 0.8;
+  white-space: pre-line; /* keep the note's own line breaks */
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+}
+
+.note-editor .note-title {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.note-editor .note-body {
+  min-height: 45dvh;
+  line-height: 1.55;
 }
 
 /* ---------- cats ---------- */
@@ -693,12 +786,18 @@ dialog::backdrop {
 }
 
 /* =====================================================================
-   Desktop (1024px+): the upload button sits in the page, not floating.
+   Desktop (1024px+): the add buttons sit in the page, not floating.
    ===================================================================== */
 @media (min-width: 1024px) {
-  .upload-fab {
+  .add-bar {
     position: static;
-    align-self: flex-start;
+    flex-direction: row-reverse; /* Upload first (left), then Note */
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .fab {
     box-shadow: var(--shadow);
   }
 

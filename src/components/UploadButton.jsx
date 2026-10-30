@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { ACCEPT, uploadMany } from '../lib/files'
+import { ACCEPT, prepareUpload } from '../lib/files'
+import { addItem } from '../lib/queue'
+import { processQueue } from '../lib/sync'
 import Cat from './Dog'
 
 export default function UploadButton({ categoryId, onUploaded }) {
-  const [progress, setProgress] = useState(null) // { done, total } while busy
+  const [progress, setProgress] = useState(null)
   const [failures, setFailures] = useState([])
 
   async function handleChange(e) {
@@ -14,10 +16,29 @@ export default function UploadButton({ categoryId, onUploaded }) {
 
     setFailures([])
     setProgress({ done: 0, total: files.length })
-    const failed = await uploadMany(files, categoryId, (done, total) => setProgress({ done, total }))
+    const failed = []
+    let queued = 0
+
+    for (const [index, file] of files.entries()) {
+      try {
+        await addItem(await prepareUpload(file, categoryId))
+        queued += 1
+      } catch (error) {
+        failed.push({ name: file.name, message: error.message })
+      }
+      setProgress({ done: index + 1, total: files.length })
+    }
+
     setProgress(null)
     setFailures(failed)
-    if (failed.length < files.length) onUploaded()
+    if (queued) {
+      onUploaded()
+      try {
+        await processQueue()
+      } catch (error) {
+        setFailures((current) => [...current, { name: 'Queue sync', message: error.message }])
+      }
+    }
   }
 
   // A fragment (<>…</>): these pieces sit directly in the parent's .add-bar.
@@ -44,10 +65,10 @@ export default function UploadButton({ categoryId, onUploaded }) {
 
       {progress ? (
         <div className="card add-bar-card upload-progress">
-          <Cat name="walk" size={60} label="cat walking while uploading" />
+          <Cat name="walk" size={60} label="cat walking while preparing uploads" />
           <progress value={progress.done} max={progress.total} />
           <p className="muted small">
-            Uploading {progress.done} / {progress.total}… keep the app open.
+            Preparing {progress.done} / {progress.total}…
           </p>
         </div>
       ) : (

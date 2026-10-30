@@ -1,15 +1,44 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
+import { useQueue } from '../lib/useQueue'
+import { retryFailed, startSync } from '../lib/sync'
 import Cat from './Dog'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function Layout() {
   const session = useSession()
+  const { items, error: queueError } = useQueue()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [confirmingSignOut, setConfirmingSignOut] = useState(false)
+  const [online, setOnline] = useState(navigator.onLine)
+  const [syncError, setSyncError] = useState('')
+
+  useEffect(() => startSync(), [])
+
+  useEffect(() => {
+    const updateOnline = () => setOnline(navigator.onLine)
+    window.addEventListener('online', updateOnline)
+    window.addEventListener('offline', updateOnline)
+    return () => {
+      window.removeEventListener('online', updateOnline)
+      window.removeEventListener('offline', updateOnline)
+    }
+  }, [])
+
+  const failedCount = items.filter((item) => item.status === 'failed').length
+  const uploadingCount = items.filter((item) => item.status === 'uploading').length
+  const syncStatus = queueError || syncError
+    ? 'Sync issue'
+    : !online
+      ? `Offline · ${items.length} queued`
+      : uploadingCount
+        ? `Syncing ${uploadingCount}`
+        : items.length
+          ? `${items.length} queued`
+          : 'All synced'
 
   async function handleSignOut() {
     // Wipe the offline copies of lists and images kept by the service worker
@@ -20,7 +49,17 @@ export default function Layout() {
         if (key.startsWith('data-') || key.startsWith('media-')) await caches.delete(key)
       }
     }
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) throw new Error(error.message)
+  }
+
+  async function handleRetry() {
+    setSyncError('')
+    try {
+      await retryFailed()
+    } catch (error) {
+      setSyncError(error.message)
+    }
   }
 
   function handleSearch(e) {
@@ -52,6 +91,11 @@ export default function Layout() {
           />
         </form>
         <div className="actions">
+          {failedCount && online && !queueError && !syncError ? (
+            <button className="sync-pill" onClick={handleRetry}>Retry {failedCount} failed</button>
+          ) : (
+            <span className="sync-pill" role="status" aria-live="polite">{syncStatus}</span>
+          )}
           {/* On phones only the 💗 shows; aria-label keeps it readable for
               screen readers, which don't see what CSS hides visually. */}
           <button
@@ -65,14 +109,20 @@ export default function Layout() {
         </div>
       </header>
       <main className="page">
+        {(queueError || syncError) && <p className="error">{queueError || syncError}</p>}
         <Outlet />
       </main>
 
       {confirmingSignOut && (
         <ConfirmDialog
-          title="Sign out?"
-          message={`You're signed in as ${session.user.email}. Pictures saved for offline viewing will be cleared from this device.`}
-          confirmLabel="Sign out"
+          title={items.length ? 'Sign out with uploads waiting?' : 'Sign out?'}
+          message={`You're signed in as ${session.user.email}. Pictures saved for offline viewing will be cleared from this device.${
+            items.length
+              ? ` ${items.length} unsynced upload${items.length === 1 ? '' : 's'} will remain saved in this browser and resume after you sign in again.`
+              : ''
+          }`}
+          confirmLabel={items.length ? 'Sign out anyway' : 'Sign out'}
+          danger
           onConfirm={handleSignOut}
           onClose={() => setConfirmingSignOut(false)}
         />

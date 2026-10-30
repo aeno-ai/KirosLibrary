@@ -1,6 +1,93 @@
 import { BUCKET, SUPABASE_URL, supabase } from './supabase'
 import { escapeLike, unwrap } from './db'
 import { prepareFile } from './images'
+import { Upload } from 'tus-js-client'
+
+// Validates and compresses a picked file, and reserves its storage paths.
+// Returns a queue item (see queue.js). Nothing is uploaded yet.
+export async function prepareUpload(file, categoryId) {
+  const problem = validate(file)
+  if (problem) throw new Error(problem)
+
+  const { full, thumb } = await prepareFile(file)
+  const id = newId()
+  return {
+    id,
+    categoryId,
+    filename: file.name,
+    file_type: full.type,
+    size_bytes: full.size,
+    storagePath: `${id}.${EXTENSIONS[full.type]}`,
+    thumbPath: thumb ? `thumbs/${id}.${EXTENSIONS[thumb.type]}` : null,
+    full,
+    thumb,
+    status: 'pending',
+    error: '',
+    createdAt: Date.now(),
+  }
+}
+
+// TUS = a resumable upload protocol. The file is sent in chunks; if the
+// connection drops, the next attempt asks the server how much arrived and
+// continues from there. The resume info is kept in localStorage under the
+// fingerprint, so we use the item id (Blobs have no name to fingerprint).
+async function tusUpload(item, onProgress) {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  if (!token) throw new Error('Not signed in.')
+
+  await new Promise((resolve, reject) => {
+    const upload = new Upload(item.full, {
+      endpoint: `${SUPABASE_URL}/storage/v1/upload/resumable`,
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      headers: { authorization: `Bearer ${token}`, 'x-upsert': 'true' },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      chunkSize: 6 * 1024 * 1024, // Supabase requires exactly 6 MB chunks
+      fingerprint: async () => `kiros-${item.id}`,
+      metadata: {
+        bucketName: BUCKET,
+        objectName: item.storagePath,
+        contentType: item.file_type,
+        cacheControl: '3600',
+      },
+      onError: reject,
+      onProgress: (sent, total) => onProgress?.(sent, total),
+      onSuccess: resolve,
+    })
+    upload.findPreviousUploads().then((previous) => {
+      if (previous.length) upload.resumeFromPreviousUpload(previous[0])
+      upload.start()
+    }, reject)
+  })
+}
+
+// Uploads one queue item: full file, thumbnail, then the database row.
+// Safe to call again after a failure: every step can be repeated.
+export async function uploadItem(item, onProgress) {
+  await tusUpload(item, onProgress)
+
+  if (item.thumb) {
+    unwrap(
+      await storage().upload(item.thumbPath, item.thumb, {
+        contentType: item.thumb.type,
+        upsert: true,
+      }),
+    )
+  }
+
+  const { error } = await supabase.from('files').insert({
+    category_id: item.categoryId,
+    filename: item.filename,
+    storage_path: item.storagePath,
+    thumb_path: item.thumbPath,
+    file_type: item.file_type,
+    size_bytes: item.size_bytes,
+  })
+  // 23505 = this storage_path already has a row, so an earlier attempt got
+  // as far as the insert. Nothing left to do.
+  if (error && error.code !== '23505') throw new Error(error.message)
+}
 
 // Must match file_size_limit and allowed_mime_types in supabase/schema.sql.
 // The bucket enforces these on the server; checking here too just gives a
@@ -18,7 +105,6 @@ const EXTENSIONS = {
 }
 export const ACCEPT = Object.keys(EXTENSIONS).join(',')
 export const PAGE_SIZE = 48
-const UPLOADS_AT_ONCE = 3
 
 const storage = () => supabase.storage.from(BUCKET)
 
@@ -40,71 +126,6 @@ function newId() {
   b[8] = (b[8] & 0x3f) | 0x80
   const hex = [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
-}
-
-async function uploadOne(file, categoryId) {
-  const problem = validate(file)
-  if (problem) throw new Error(problem)
-
-  const { full, thumb } = await prepareFile(file)
-  // The path is a random id, not the category name. Moving or renaming a
-  // category later only changes the database row; the stored file stays put.
-  const id = newId()
-  const storagePath = `${id}.${EXTENSIONS[full.type]}`
-  const thumbPath = thumb ? `thumbs/${id}.${EXTENSIONS[thumb.type]}` : null
-
-  const uploaded = []
-  try {
-    unwrap(await storage().upload(storagePath, full, { contentType: full.type }))
-    uploaded.push(storagePath)
-    if (thumb) {
-      unwrap(await storage().upload(thumbPath, thumb, { contentType: thumb.type }))
-      uploaded.push(thumbPath)
-    }
-    unwrap(
-      await supabase.from('files').insert({
-        category_id: categoryId,
-        filename: file.name,
-        storage_path: storagePath,
-        thumb_path: thumbPath,
-        file_type: full.type,
-        size_bytes: full.size,
-        // uploader_id is filled in by the database (default auth.uid()).
-      }),
-    )
-  } catch (e) {
-    // Undo: without a database row nothing would ever point at these files,
-    // so they'd sit in storage forever eating the free-tier quota.
-    if (uploaded.length) await storage().remove(uploaded)
-    throw e
-  }
-}
-
-// Uploads several files, a few at a time. onProgress(done, total) fires after
-// each one. Returns the list of failures ({ name, message }).
-export async function uploadMany(files, categoryId, onProgress) {
-  const queue = [...files]
-  const failures = []
-  let done = 0
-
-  // A "worker pool": start 3 workers that each keep pulling the next file off
-  // the shared queue until it's empty. That keeps 3 uploads in flight without
-  // starting 50 at once and choking a phone connection.
-  async function worker() {
-    while (queue.length) {
-      const file = queue.shift()
-      try {
-        await uploadOne(file, categoryId)
-      } catch (e) {
-        failures.push({ name: file.name, message: e.message })
-      }
-      onProgress(++done, files.length)
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(UPLOADS_AT_ONCE, files.length) }, worker)
-  await Promise.all(workers)
-  return failures
 }
 
 // One page of files, newest first. Asking for PAGE_SIZE + 1 rows is a cheap

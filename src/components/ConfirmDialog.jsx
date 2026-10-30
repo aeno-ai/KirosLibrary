@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 export default function ConfirmDialog({ title, message, confirmLabel, danger, onConfirm, onClose }) {
   const dialogRef = useRef(null)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!dialogRef.current.open) dialogRef.current.showModal()
@@ -12,10 +13,16 @@ export default function ConfirmDialog({ title, message, confirmLabel, danger, on
 
   async function handleConfirm() {
     setBusy(true)
-    await onConfirm()
-    // onConfirm may have unmounted us (e.g. signing out leaves the page),
-    // so only close if the dialog is still on screen.
-    if (dialogRef.current?.open) dialogRef.current.close()
+    setError('')
+    try {
+      await onConfirm()
+      // onConfirm may have unmounted us (e.g. signing out leaves the page),
+      // so only close if the dialog is still on screen.
+      if (dialogRef.current?.open) dialogRef.current.close()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+      setBusy(false)
+    }
   }
 
   return (
@@ -23,6 +30,7 @@ export default function ConfirmDialog({ title, message, confirmLabel, danger, on
       <div className="stack">
         <h2>{title}</h2>
         {message && <p className="muted" style={{ margin: 0 }}>{message}</p>}
+        {error && <p className="error">{error}</p>}
         <div className="row">
           <button onClick={() => dialogRef.current.close()} disabled={busy}>
             Cancel

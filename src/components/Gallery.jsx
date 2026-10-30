@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isImage, listFiles, signedUrls } from '../lib/files'
 import { listNotes, noteTitle } from '../lib/notes'
+import { retryFailed } from '../lib/sync'
+import { useQueue } from '../lib/useQueue'
 import Cat from './Dog'
 import FileViewer from './FileViewer'
 import Loading from './Loading'
@@ -19,32 +21,65 @@ async function loadPage(categoryId, page) {
 // state below resets without any manual "clear everything" code.
 // upTo: the URL of the parent folder, for the "Up" card.
 export default function Gallery({ categoryId, upTo }) {
+  const { items: queueItems, error: queueError } = useQueue()
+  const folderQueueItems = useMemo(
+    () => queueItems.filter((item) => item.categoryId === categoryId),
+    [queueItems, categoryId],
+  )
+  const queueKey = folderQueueItems.map((item) => item.id).join(',')
+  const queueIds = useRef(new Set())
   const [files, setFiles] = useState(null)
   const [notes, setNotes] = useState([])
   const [thumbs, setThumbs] = useState(new Map())
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [error, setError] = useState('')
+  const [retryError, setRetryError] = useState('')
   const [open, setOpen] = useState(null) // the file shown in the viewer
   const [openNote, setOpenNote] = useState(null) // the note shown in the editor
+  const fileLoadVersion = useRef(0)
 
   useEffect(() => {
     let ignore = false
+    const request = ++fileLoadVersion.current
     // Promise.all runs both requests at the same time and waits for both.
     Promise.all([loadPage(categoryId, 0), listNotes(categoryId)]).then(
       ([result, folderNotes]) => {
-        if (ignore) return
+        if (ignore || request !== fileLoadVersion.current) return
         setFiles(result.rows)
         setThumbs(result.thumbs)
         setHasMore(result.hasMore)
         setNotes(folderNotes)
       },
-      (e) => !ignore && setError(e.message),
+      (e) => !ignore && request === fileLoadVersion.current && setError(e.message),
     )
     return () => {
       ignore = true
     }
   }, [categoryId])
+
+  useEffect(() => {
+    const previousIds = queueIds.current
+    const nextIds = new Set(queueKey ? queueKey.split(',') : [])
+    queueIds.current = nextIds
+    if (![...previousIds].some((id) => !nextIds.has(id))) return
+
+    let ignore = false
+    const request = ++fileLoadVersion.current
+    const pages = Array.from({ length: page + 1 }, (_, index) => loadPage(categoryId, index))
+    Promise.all(pages).then(
+      (results) => {
+        if (ignore || request !== fileLoadVersion.current) return
+        setFiles(results.flatMap((result) => result.rows))
+        setThumbs(new Map(results.flatMap((result) => [...result.thumbs])))
+        setHasMore(results[results.length - 1].hasMore)
+      },
+      (e) => !ignore && request === fileLoadVersion.current && setError(e.message),
+    )
+    return () => {
+      ignore = true
+    }
+  }, [categoryId, page, queueKey])
 
   async function loadMore() {
     try {
@@ -98,6 +133,27 @@ export default function Gallery({ categoryId, upTo }) {
           </button>
         ))}
 
+        {folderQueueItems.map((item) => {
+          const failed = item.status === 'failed'
+          const status = failed
+            ? 'Failed · tap to retry'
+            : item.status === 'uploading'
+              ? 'Uploading…'
+              : 'Waiting to upload'
+          return (
+            <button
+              key={`queued-${item.id}`}
+              className={`tile pending${failed ? ' failed' : ''}`}
+              onClick={failed ? () => retryFailed().catch((e) => setRetryError(e.message)) : undefined}
+              disabled={!failed}
+              title={failed ? item.error : item.filename}
+            >
+              <span className="doc">{isImage(item) ? '🖼️' : '📄'} {item.filename}</span>
+              <span className="status">{status}</span>
+            </button>
+          )
+        })}
+
         {files.map((f) => (
           <button key={f.id} className="tile" onClick={() => setOpen(f)} title={f.filename}>
             {thumbs.get(f.thumb_path) ? (
@@ -113,7 +169,9 @@ export default function Gallery({ categoryId, upTo }) {
         ))}
       </div>
 
-      {files.length === 0 && notes.length === 0 && (
+      {(queueError || retryError) && <p className="error">{queueError || retryError}</p>}
+
+      {files.length === 0 && notes.length === 0 && folderQueueItems.length === 0 && (
         <div className="empty">
           <Cat name="sleep" size={130} label="sleeping cat" />
           <p className="muted">Nothing here yet. Upload some files or write a note!</p>

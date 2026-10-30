@@ -14,7 +14,7 @@ const EMOJI = {
   sleep: '🐶',
   walk: '🦮',
   loading: '🐾',
-  love: '🐶❤️',
+  love: '🐶',
 }
 
 // Reads the OS/phone "Reduce motion" accessibility setting once.

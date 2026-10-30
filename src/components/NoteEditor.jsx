@@ -66,7 +66,7 @@ export default function NoteEditor({ note, categoryId, onSaved, onRemoved, onMov
     <dialog ref={dialogRef} className="viewer note-editor" onClose={onClose} onCancel={handleCancel}>
       <form className="stack" onSubmit={handleSave}>
         <div className="row">
-          <h2>{isNew ? '📝 New note' : '📝 Note'}</h2>
+          <h2>{isNew ? 'New note' : 'Note'}</h2>
           <span className="spacer" />
           <button type="button" onClick={tryClose}>
             Close

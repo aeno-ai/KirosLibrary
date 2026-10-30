@@ -62,8 +62,11 @@ The code itself has comments on the unusual parts. This doc is the map, and the 
 | `supabase.js` | Creates the single Supabase client that every other file imports. It fails loudly if `.env` is missing. |
 | `db.js` | `unwrap()` turns Supabase's `{ data, error }` replies into normal values or thrown errors, and translates Postgres error codes into friendly messages. |
 | `categories.js` | Category CRUD, plus the helpers `childrenOf()` and `pathTo()` and the `useCategories()` hook. |
-| `files.js` | Upload (with a worker pool), list with paging, signed URLs, move, search, delete. |
+| `files.js` | Prepare and upload queued files, list with paging, signed URLs, move, search, delete. |
 | `images.js` | Compresses images and makes thumbnails in the browser using a `<canvas>`. |
+| `queue.js` | Persists prepared uploads in IndexedDB and notifies subscribers when they change. |
+| `sync.js` | Uploads queued files one at a time, retries after reconnecting, and records failures. |
+| `useQueue.js` | React hook that keeps queue UI in sync with IndexedDB. |
 
 **`src/auth/` decides who is logged in**
 
@@ -85,9 +88,9 @@ The code itself has comments on the unusual parts. This doc is the map, and the 
 
 | File | Used by | What it does |
 |------|---------|--------------|
-| `Layout.jsx` | App routes | Top bar (title, search box, sign out) around every private page. |
+| `Layout.jsx` | App routes | Top bar, upload sync status, and sign out around every private page. |
 | `Breadcrumbs.jsx` | Folder | "Library / Screenshots / 2026" links. |
-| `UploadButton.jsx` | Folder | File picker, progress bar, failure list. |
+| `UploadButton.jsx` | Folder | Prepares selected files and adds them to the offline upload queue. |
 | `Gallery.jsx` | Folder | Thumbnail grid, "Load more", opens the viewer. |
 | `FileViewer.jsx` | Gallery, Search | Popup with the full image, download, move, delete. |
 | `MovePicker.jsx` | FileViewer | Folder browser for choosing where to move a file. |
@@ -118,15 +121,17 @@ main.jsx
            └─► components/Layout.jsx ──► lib/supabase.js, auth/session.js
                 ├─► pages/Folder.jsx ──► lib/categories.js
                 │    ├─► Breadcrumbs.jsx
-                │    ├─► UploadButton.jsx ──► lib/files.js
-                │    └─► Gallery.jsx ───────► lib/files.js
+                │    ├─► UploadButton.jsx ──► lib/files.js, lib/queue.js, lib/sync.js
+                │    └─► Gallery.jsx ───────► lib/files.js, lib/useQueue.js, lib/sync.js
                 │         └─► FileViewer.jsx ──► lib/files.js
                 │              └─► MovePicker.jsx ──► lib/categories.js, lib/files.js
                 └─► pages/Search.jsx ──► lib/files.js
                      └─► FileViewer.jsx
 
 lib/categories.js ─► lib/db.js, lib/supabase.js
-lib/files.js ──────► lib/db.js, lib/supabase.js, lib/images.js
+lib/files.js ──────► lib/db.js, lib/supabase.js, lib/images.js, tus-js-client
+lib/sync.js ───────► lib/queue.js, lib/files.js, lib/supabase.js
+lib/useQueue.js ───► lib/queue.js
 ```
 
 **The rule this follows:** components never call `supabase` for data directly. They call a function in `src/lib/`, which does the Supabase call. (Login and sign-out are the two small exceptions, since they *are* the auth calls.) So if Supabase changes its API, you fix `lib/`, not 10 components.
@@ -169,17 +174,13 @@ Gallery ─signedUrls()──────► Supabase Storage → returns ?token
 
 ### …you upload 10 screenshots
 
-1. `UploadButton` gets the files from the `<input type="file" multiple>`.
-2. `uploadMany()` starts **3 workers**. Each one pulls the next file from the queue until the queue is empty.
-3. For each file, `uploadOne()`:
-   1. `validate()` checks the type and the 25 MB limit.
-   2. `prepareFile()` (images.js) decodes the image, makes a 400 px thumbnail, and makes a compressed copy (max 2560 px). It keeps the original if that's smaller.
-   3. It uploads the full file to `library/<random-id>.webp`.
-   4. It uploads the thumbnail to `library/thumbs/<random-id>.webp`.
-   5. It inserts a row in `files`, and the database fills in `uploader_id`.
-   6. If any step fails, it deletes what was already uploaded, so no orphan files are left.
-4. After each file, `onProgress` updates the progress bar.
-5. When all are done, `Folder` bumps its upload counter. That changes the Gallery's `key`, so React mounts a fresh Gallery that loads the new files.
+1. `UploadButton` gets files from the `<input type="file" multiple>`, validates and prepares each one, then stores its Blobs and metadata in IndexedDB.
+2. The Gallery shows each queued file as a tile. Its status changes from waiting to uploading; a real online error leaves a failed tile that can be retried.
+3. `processQueue()` uploads one item at a time using resumable TUS uploads. It sends the full file, thumbnail, and database row; repeating the steps is safe.
+4. After a successful upload, the queue item is removed and the Gallery refreshes its server-backed file list.
+5. If the connection drops, the current item returns to pending and the runner stops. The browser's `online` event starts it again when the connection returns.
+
+The queue survives reloads because it lives in IndexedDB. `startSync()` runs when the private app layout opens, but does nothing while logged out. Failed items are skipped until retried. Signing out warns about unsynced files; they remain on the device and resume after signing in again.
 
 ### …you move or delete a file
 
@@ -214,7 +215,9 @@ Offline, `files.js` can't get new signed URLs, so it builds token-less URLs (`of
 | Context + custom hook | `session.js`, `useCategories()` | Share data without passing props through every level. |
 | Effect with `ignore` flag | `categories.js`, `Gallery.jsx`, `Search.jsx` | Throws away responses that arrive after the component is gone or the input changed. |
 | `key` to reset a component | `Folder.jsx` → `Gallery` | A new key gives a brand-new component with fresh state. |
-| Worker pool | `uploadMany()` in `files.js` | N async workers sharing one queue = limited parallelism. |
+| IndexedDB queue | `queue.js`, `sync.js` | Prepared files survive reloads and upload one at a time when online. |
+| Custom hook + subscription | `useQueue.js`, `queue.js` | UI components react to queue changes without polling. |
+| Resumable uploads | `files.js` | TUS continues an interrupted file upload from its last saved chunk. |
 | Canvas image processing | `images.js` | Resize/re-encode in the browser, with no server needed. |
 | Native `<dialog>` | `FileViewer.jsx` | A built-in modal with Esc, focus trap, and backdrop for free. |
 | URL as state | `Search.jsx` | `?q=` survives refresh and Back. |
@@ -261,7 +264,7 @@ For every later update, run `npm run build` and re-upload `dist/`. The service w
 ## 7. Try it yourself
 
 1. **See RLS work:** while logged out, open `https://<project-ref>.supabase.co/rest/v1/categories?apikey=<your publishable key>` in a browser. You get an empty list or "permission denied", never your data.
-2. **Watch the worker pool:** open DevTools → Network, upload 6 images, and see that only ~3 uploads run at once.
+2. **Watch the upload queue:** upload several files, reload while they are pending, and confirm their tiles and statuses return.
 3. **Watch compression:** upload a big PNG screenshot, then compare its size in Supabase Storage with the original.
 4. **Go offline:** `npm run build && npm run preview`, open a folder, then DevTools → Network → "Offline" → reload. The folder and its thumbnails still appear.
 5. **Break it on purpose:** in `Folder.jsx`, remove `key={…}` from `<Gallery>`, upload a file, and notice the gallery doesn't refresh. Then put it back.

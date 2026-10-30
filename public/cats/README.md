@@ -10,7 +10,6 @@ The app looks for exactly these names; any missing one shows a bouncing emoji in
 | `sleep.json` | Empty folders | "sleeping cat" |
 | `walk.json` | Above the upload progress bar | "cat walking" |
 | `loading.json` | Every loading screen | "cat loading", "paw loading" |
-| `love.json` | Love-note banner and Notes page | "cat love", "cat heart" |
 
 Tips:
 - Check the animation's license on its page. The free "Lottie Simple License" allows use in your app.

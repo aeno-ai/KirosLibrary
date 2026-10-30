@@ -533,76 +533,6 @@ progress {
   gap: 0.2rem;
 }
 
-/* ---------- love notes ---------- */
-
-.note-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  background: #fff1a8;
-  color: #4a3b12;
-  border-radius: 6px 18px 18px 18px;
-  padding: 0.8rem 1rem;
-  box-shadow: 0 8px 20px rgb(214 51 108 / 0.18);
-  transform: rotate(-1deg);
-  animation: pop-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
-}
-
-.note-banner p {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.note-banner button {
-  background: #fff;
-  border-color: #f3d36b;
-  color: #b23a64;
-}
-
-@keyframes pop-in {
-  from {
-    transform: scale(0.6) rotate(-6deg);
-    opacity: 0;
-  }
-}
-
-.bubbles {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.bubble {
-  /* In a flex column, children stretch to full width by default.
-     align-self: flex-start makes the bubble hug its text instead. */
-  align-self: flex-start;
-  max-width: 80%;
-  padding: 0.6rem 0.9rem;
-  border-radius: 18px 18px 18px 4px;
-  background: var(--card);
-  border: 2px solid var(--line);
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.bubble.mine {
-  align-self: flex-end;
-  border-radius: 18px 18px 4px 18px;
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
-
-.bubble .meta {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-
 /* ---------- cats ---------- */
 
 .cat {
@@ -759,10 +689,6 @@ dialog::backdrop {
 
   .viewer img {
     max-height: 72vh;
-  }
-
-  .bubble {
-    max-width: 60%;
   }
 }
 

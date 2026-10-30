@@ -23,7 +23,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P7 | Deploy prep: .htaccess, InfinityFree upload steps | DONE |
 | P8 | Carnation pink theme, responsive layout, New folder dialog, Back tile, sign-out confirm | DONE |
 | P9 | Lottie cats (component file is Dog.jsx) | DONE |
-| P10 | Love notes: banner + Realtime (run supabase/02-notes-push.sql) | DONE |
+| P10 | Love notes: banner + Realtime | TODO |
 | P11 | Offline-first upload queue + resumable (TUS) uploads | TODO |
 | P12 | Web push for notes via Supabase Edge Function | TODO |
 | P13 | Docs update | TODO |

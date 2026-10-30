@@ -2,14 +2,11 @@ import { useState } from 'react'
 import { Link, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
-import { useNotes } from '../notes/notesContext'
 import Cat from './Dog'
 import ConfirmDialog from './ConfirmDialog'
-import NoteBanner from './NoteBanner'
 
 export default function Layout() {
   const session = useSession()
-  const { unseen } = useNotes()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [confirmingSignOut, setConfirmingSignOut] = useState(false)
@@ -55,10 +52,6 @@ export default function Layout() {
           />
         </form>
         <div className="actions">
-          <Link to="/notes" className="icon-link" aria-label={`Love notes, ${unseen.length} new`}>
-            💌
-            {unseen.length > 0 && <span className="badge">{unseen.length}</span>}
-          </Link>
           {/* On phones only the 💗 shows; aria-label keeps it readable for
               screen readers, which don't see what CSS hides visually. */}
           <button
@@ -72,7 +65,6 @@ export default function Layout() {
         </div>
       </header>
       <main className="page">
-        <NoteBanner />
         <Outlet />
       </main>
 

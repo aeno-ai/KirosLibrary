@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createLink, deleteLink, safeLinkUrl, updateLink } from '../lib/links'
+import SavedItemActions from '../saved/SavedItemActions'
+import Icon from './Icon'
 
 export default function LinkDialog({ link, categoryId, onSaved, onRemoved, onClose }) {
   const dialogRef = useRef(null)
@@ -93,12 +95,13 @@ export default function LinkDialog({ link, categoryId, onSaved, onRemoved, onClo
           <div className="row">
             {externalUrl ? (
               <a className="primary-button" href={externalUrl} target="_blank" rel="noopener noreferrer">
-                Open link in a new tab ↗
+                Open link in a new tab <Icon name="external" />
               </a>
             ) : (
               <p className="error">This link is not a valid http or https URL.</p>
             )}
             <span className="spacer" />
+            <SavedItemActions itemType="link" itemId={link.id} label={`link ${link.title}`} />
             <button type="button" onClick={() => setEditing(true)}>
               Edit
             </button>

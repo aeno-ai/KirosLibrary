@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { deleteFile, fileUrl, isImage, moveFile } from '../lib/files'
 import MovePicker from './MovePicker'
+import SavedItemActions from '../saved/SavedItemActions'
 
 // onRemoved(file) after a delete, onMoved(file, newCategoryId) after a move.
 export default function FileViewer({ file, onClose, onRemoved, onMoved }) {
@@ -84,6 +85,7 @@ export default function FileViewer({ file, onClose, onRemoved, onMoved }) {
             {new Date(file.created_at).toLocaleDateString()}
           </span>
           <span className="spacer" />
+          <SavedItemActions itemType="file" itemId={file.id} label={`file ${file.filename}`} />
           {downloadUrl && (
             <a href={downloadUrl} download>
               Download

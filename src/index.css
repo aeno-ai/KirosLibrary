@@ -123,6 +123,12 @@ textarea {
   color: inherit;
 }
 
+.icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  vertical-align: -0.16em;
+}
+
 input,
 textarea {
   width: 100%;
@@ -238,7 +244,7 @@ button:disabled {
   flex: 1;
 }
 
-/* Text that only shows on tablet/desktop (e.g. "Sign out" next to its 💗). */
+/* Text that only shows on tablet/desktop next to a compact action icon. */
 .wide-only {
   display: none;
 }
@@ -319,6 +325,21 @@ button:disabled {
 
 .topbar .search {
   grid-area: search;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.8rem;
+  z-index: 1;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.topbar .search input {
+  padding-left: 2.7rem;
 }
 
 .topbar .actions {
@@ -378,7 +399,7 @@ button:disabled {
   text-align: center;
 }
 
-.login .cat {
+.login .kiro-mascot {
   align-self: center;
 }
 
@@ -427,6 +448,14 @@ button:disabled {
 .new-folder input {
   flex: 1;
   width: auto;
+}
+
+.folder-card {
+  position: relative;
+}
+
+.folder-card > a {
+  padding-right: 5.2rem;
 }
 
 /* ---------- gallery ---------- */
@@ -516,7 +545,7 @@ progress {
   accent-color: var(--accent);
 }
 
-/* ---------- add bar: 📝 Note + ＋ Upload ---------- */
+/* ---------- add bar: note, link, and upload ---------- */
 
 /* Phones: a column of buttons floating bottom-right, above the iPhone home
    bar, reachable with a thumb from anywhere on the page. FAB = "floating
@@ -670,28 +699,216 @@ progress {
   line-height: 1.55;
 }
 
-/* ---------- cats ---------- */
+/* ---------- favorites and pins ---------- */
 
-.cat {
+.quick-access,
+.saved-items-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.quick-access {
+  padding: 0.9rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 92%, var(--accent-soft));
+}
+
+.saved-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.saved-item-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.7rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.saved-item-card.missing {
+  border-style: dashed;
+}
+
+.saved-item-type {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.saved-item-open {
+  width: 100%;
+  min-height: var(--tap);
+  overflow-wrap: anywhere;
+  border: none;
+  border-radius: 9px;
+  padding: 0.25rem 0;
+  background: none;
+  color: var(--fg);
+  font-weight: 800;
+  text-align: left;
+  text-decoration: none;
+}
+
+a.saved-item-open {
+  display: block;
+}
+
+.saved-item-open:not(.muted):hover,
+.saved-item-open:not(.muted):focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.saved-item-controls {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  min-width: 0;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.cat-fallback {
+.saved-item-buttons {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.saved-item-action {
+  display: inline-grid;
+  width: 36px;
+  min-height: 36px;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.2rem;
   line-height: 1;
-  animation: cat-bounce 1.6s ease-in-out infinite;
 }
 
-@keyframes cat-bounce {
+.saved-item-action.favorite.active {
+  border-color: #ef709f;
+  background: #ffe3ee;
+  color: #d6336c;
+}
+
+.saved-item-action.pin.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.saved-item-error {
+  max-width: 210px;
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.folder-card > .saved-item-controls {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+}
+
+.folder-card .saved-item-action {
+  width: 32px;
+  min-height: 32px;
+  border-width: 1px;
+  background: var(--card);
+}
+
+.folder-card .saved-item-error {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.15rem);
+  z-index: 2;
+  padding: 0.25rem;
+  border-radius: 6px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.saved-item-filters {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.saved-item-filters button {
+  min-height: 36px;
+  padding: 0.25rem 0.75rem;
+  white-space: nowrap;
+}
+
+.saved-item-filters button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.saved-items-empty {
+  margin: 0;
+}
+
+/* ---------- Kiro mascot ---------- */
+
+.kiro-mascot {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.kiro-mascot img,
+.kiro-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 82%;
+}
+
+.kiro-idle img {
+  animation: kiro-idle 4.8s ease-in-out infinite;
+}
+
+.kiro-happy img {
+  animation: kiro-happy 1.9s ease-in-out infinite;
+}
+
+.kiro-sleep img {
+  animation: kiro-sleep 4.6s ease-in-out infinite;
+}
+
+.kiro-fallback {
+  width: 60%;
+  height: 60%;
+  color: var(--accent);
+}
+
+@keyframes kiro-idle {
   0%,
-  100% {
-    transform: translateY(0) rotate(-4deg);
-  }
-  50% {
-    transform: translateY(-12%) rotate(4deg);
-  }
+  100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+}
+
+@keyframes kiro-happy {
+  0%,
+  100% { transform: translate(0) rotate(-1deg); }
+  35% { transform: translate(-2px, -5px) rotate(1deg); }
+  65% { transform: translate(2px, -2px) rotate(-1deg); }
+}
+
+@keyframes kiro-sleep {
+  0%,
+  100% { transform: scale(1); }
+  50% { transform: scale(1.018); }
 }
 
 .empty {
@@ -829,6 +1046,25 @@ dialog::backdrop {
   }
 }
 
+@media (max-width: 420px) {
+  .topbar .actions {
+    gap: 0.3rem;
+  }
+
+  .topbar .actions .icon-link {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .sync-pill {
+    max-width: 64px;
+    overflow: hidden;
+    padding-inline: 0.4rem;
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+  }
+}
+
 /* =====================================================================
    Desktop (1024px+): the add buttons sit in the page, not floating.
    ===================================================================== */
@@ -852,6 +1088,11 @@ dialog::backdrop {
 
 /* Respect "Reduce motion" in the phone/OS accessibility settings. */
 @media (prefers-reduced-motion: reduce) {
+  .kiro-mascot img {
+    animation: none;
+    transform: none;
+  }
+
   *,
   *::before,
   *::after {

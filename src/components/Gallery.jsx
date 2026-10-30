@@ -5,8 +5,9 @@ import { listLinks } from '../lib/links'
 import { listNotes, noteTitle } from '../lib/notes'
 import { retryFailed } from '../lib/sync'
 import { useQueue } from '../lib/useQueue'
-import Cat from './Dog'
 import FileViewer from './FileViewer'
+import Icon from './Icon'
+import KiroMascot from './KiroMascot'
 import LinkDialog from './LinkDialog'
 import Loading from './Loading'
 import NoteEditor from './NoteEditor'
@@ -134,14 +135,14 @@ export default function Gallery({ categoryId, upTo }) {
         {/* Always the first card: goes up to the parent folder. No history
             needs recording; every folder knows its parent_id. */}
         <Link to={upTo} className="tile up-tile" title="Go up one folder">
-          <span aria-hidden="true">⬆</span>
+          <Icon name="arrowUp" />
           <span className="small">Back</span>
         </Link>
 
         {/* Notes and links come right after Back, then files. */}
         {notes.map((n) => (
           <button key={n.id} className="tile note-tile" onClick={() => setOpenNote(n)}>
-            <strong>📝 {noteTitle(n)}</strong>
+            <strong><Icon name="note" /> {noteTitle(n)}</strong>
             {/* Under a real title, show the start of the text. */}
             {n.title.trim() && <span className="snippet">{n.body}</span>}
           </button>
@@ -154,7 +155,7 @@ export default function Gallery({ categoryId, upTo }) {
             onClick={() => setOpenLink(link)}
             title={link.title}
           >
-            <strong>🔗 {link.title}</strong>
+            <strong><Icon name="link" /> {link.title}</strong>
           </button>
         ))}
 
@@ -173,7 +174,7 @@ export default function Gallery({ categoryId, upTo }) {
               disabled={!failed}
               title={failed ? item.error : item.filename}
             >
-              <span className="doc">{isImage(item) ? '🖼️' : '📄'} {item.filename}</span>
+              <span className="doc"><Icon name={isImage(item) ? 'image' : 'document'} /> {item.filename}</span>
               <span className="status">{status}</span>
             </button>
           )
@@ -187,7 +188,7 @@ export default function Gallery({ categoryId, upTo }) {
               <img src={thumbs.get(f.thumb_path)} alt={f.filename} loading="lazy" />
             ) : (
               <span className="doc">
-                {isImage(f) ? '🖼️' : '📄'} {f.filename}
+                <Icon name={isImage(f) ? 'image' : 'document'} /> {f.filename}
               </span>
             )}
           </button>
@@ -198,7 +199,7 @@ export default function Gallery({ categoryId, upTo }) {
 
       {files.length === 0 && notes.length === 0 && links.length === 0 && folderQueueItems.length === 0 && (
         <div className="empty">
-          <Cat name="sleep" size={130} label="sleeping cat" />
+          <KiroMascot mood="sleep" size={130} label="Kiro sleeping" />
           <p className="muted">Nothing here yet. Add a file, note, or link!</p>
         </div>
       )}

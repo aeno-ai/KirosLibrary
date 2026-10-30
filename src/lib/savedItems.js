@@ -1,0 +1,90 @@
+import { unwrap } from './db'
+import { supabase } from './supabase'
+
+const TYPES = new Set(['folder', 'file', 'note', 'link'])
+const COLUMNS = 'item_type, item_id, is_favorite, is_pinned, created_at, updated_at'
+
+export function savedItemKey(itemType, itemId) {
+  return `${itemType}:${itemId}`
+}
+
+function requireSavedItem(itemType, itemId) {
+  if (!TYPES.has(itemType) || !itemId) throw new Error('Unsupported item for Favorites or Quick Access.')
+}
+
+// RLS limits this query to auth.uid(); the browser never picks a user_id.
+export async function listSavedItems() {
+  return unwrap(
+    await supabase
+      .from('saved_items')
+      .select(COLUMNS)
+      .order('updated_at', { ascending: false }),
+  )
+}
+
+async function setFlag(itemType, itemId, flag, value) {
+  requireSavedItem(itemType, itemId)
+  const { error } = await supabase.rpc('set_saved_item_flag', {
+    p_item_type: itemType,
+    p_item_id: itemId,
+    p_flag: flag,
+    p_value: value,
+  })
+  if (error) throw new Error(error.message)
+}
+
+export function addFavorite(itemType, itemId) {
+  return setFlag(itemType, itemId, 'favorite', true)
+}
+
+export function removeFavorite(itemType, itemId) {
+  return setFlag(itemType, itemId, 'favorite', false)
+}
+
+export function pinItem(itemType, itemId) {
+  return setFlag(itemType, itemId, 'pinned', true)
+}
+
+export function unpinItem(itemType, itemId) {
+  return setFlag(itemType, itemId, 'pinned', false)
+}
+
+export function isFavorited(items, itemType, itemId) {
+  return Boolean(items?.find((item) => item.item_type === itemType && item.item_id === itemId)?.is_favorite)
+}
+
+export function isPinned(items, itemType, itemId) {
+  return Boolean(items?.find((item) => item.item_type === itemType && item.item_id === itemId)?.is_pinned)
+}
+
+async function selectSources(table, columns, ids) {
+  const chunks = Array.from({ length: Math.ceil(ids.length / 100) }, (_, index) =>
+    ids.slice(index * 100, (index + 1) * 100),
+  )
+  const results = await Promise.all(
+    chunks.map((chunk) => unwrap(supabase.from(table).select(columns).in('id', chunk))),
+  )
+  return results.flat()
+}
+
+// Resolve the four source tables in batches, never once per saved card.
+export async function resolveSavedItemSources(items) {
+  const idsByType = Object.fromEntries([...TYPES].map((type) => [type, []]))
+  items.forEach((item) => idsByType[item.item_type]?.push(item.item_id))
+
+  const [folders, files, notes, links] = await Promise.all([
+    selectSources('categories', 'id, name, parent_id', idsByType.folder),
+    selectSources('files', 'id, category_id, filename, storage_path, thumb_path, file_type, size_bytes, created_at', idsByType.file),
+    selectSources('notes', 'id, category_id, title, body, created_at, updated_at', idsByType.note),
+    selectSources('links', 'id, category_id, title, url, created_at, updated_at', idsByType.link),
+  ])
+  const sources = new Map()
+  ;[
+    ['folder', folders],
+    ['file', files],
+    ['note', notes],
+    ['link', links],
+  ].forEach(([type, rows]) => rows.forEach((row) => sources.set(savedItemKey(type, row.id), row)))
+
+  return items.map((saved) => ({ saved, source: sources.get(savedItemKey(saved.item_type, saved.item_id)) ?? null }))
+}

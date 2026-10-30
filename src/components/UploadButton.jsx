@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { ACCEPT, prepareUpload } from '../lib/files'
 import { addItem } from '../lib/queue'
 import { processQueue } from '../lib/sync'
-import Cat from './Dog'
+import Icon from './Icon'
+import KiroMascot from './KiroMascot'
 
 export default function UploadButton({ categoryId, onUploaded }) {
   const [progress, setProgress] = useState(null)
@@ -50,7 +51,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
             <strong className="error small">Couldn't upload:</strong>
             <span className="spacer" />
             <button className="link" onClick={() => setFailures([])} aria-label="Dismiss">
-              ✕
+              <Icon name="close" />
             </button>
           </div>
           <ul className="error small">
@@ -65,7 +66,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
 
       {progress ? (
         <div className="card add-bar-card upload-progress">
-          <Cat name="walk" size={60} label="cat walking while preparing uploads" />
+          <KiroMascot mood="happy" size={60} label="Kiro happily preparing uploads" />
           <progress value={progress.done} max={progress.total} />
           <p className="muted small">
             Preparing {progress.done} / {progress.total}…
@@ -75,7 +76,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
         // A <label> wrapping a hidden file input: tapping the label opens the
         // picker, so it can be styled like a button.
         <label className="fab">
-          ＋ Upload
+          <Icon name="plus" /> Upload
           <input type="file" multiple accept={ACCEPT} onChange={handleChange} hidden />
         </label>
       )}

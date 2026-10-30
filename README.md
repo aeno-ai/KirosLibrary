@@ -8,6 +8,8 @@ A private, installable library for organizing files, notes, and web links into f
 - **Files:** upload images, PDFs, and plain-text files; preview, download, move, and delete them.
 - **Notes:** create and edit text notes displayed as yellow cards in a folder.
 - **Links:** save a title and an HTTP(S) URL as a green card; select a card to open the link in a new tab, edit it, or delete it.
+- **Favorites and Pins:** heart any folder, file, note, or link, and pin important items into the homepage Quick Access section. These are personal to the signed-in account; they never change the shared library item.
+- **Kiro mascot:** the approved white-puppy poses appear at login, loading, upload preparation, and empty-folder states. Small transparent WebP assets and CSS-only motion keep Kiro available offline without an animation library.
 - **Search:** find files and notes across folders.
 - **Uploads that handle interruptions:** files are prepared in the browser, queued in IndexedDB, and uploaded resumably. The queue survives page reloads, retries after reconnecting, and shows failed uploads.
 - **Offline support:** the installable PWA caches the app shell and previously viewed folder data and media. New uploads can wait in the queue until you reconnect. Sign-out clears cached private viewing data.
@@ -59,6 +61,11 @@ Run the SQL setup scripts in the Supabase **SQL Editor**, in this order:
 3. `supabase/03-links.sql` — links table and its timestamp trigger.
 
 **Important for fresh clones:** `/supabase/` is currently ignored by this repository's `.gitignore`, so these SQL scripts are not included in Git checkouts. Obtain the scripts from the project owner, or change the ignore rule and commit the scripts if you want other developers to set up their own Supabase project from the repository. The scripts contain database setup, not credentials.
+
+4. `supabase/04-RLS.sql` — the private-library member gate, required before the saved-items migration.
+5. `supabase/05-saved-items.sql` — personal Favorites and Quick Access pins.
+
+Run `05-saved-items.sql` manually in the Supabase SQL Editor; it is not run by the app. It creates an RLS-protected table whose rows are limited to the current `auth.uid()` and the `04-RLS.sql` member gate, so one account cannot read or change another account's favorites or pins. The migration also removes a saved-item row automatically when both states are cleared.
 
 ### 4. Start the development server
 

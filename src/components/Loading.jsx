@@ -1,9 +1,9 @@
-import Cat from './Dog'
+import KiroMascot from './KiroMascot'
 
 export default function Loading({ text = 'Loading…' }) {
   return (
     <div className="empty">
-      <Cat name="loading" size={90} label="" />
+      <KiroMascot mood="happy" size={90} />
       <p className="muted small">{text}</p>
     </div>
   )

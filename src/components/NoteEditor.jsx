@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MAX_BODY, createNote, deleteNote, moveNote, updateNote } from '../lib/notes'
 import MovePicker from './MovePicker'
+import SavedItemActions from '../saved/SavedItemActions'
 
 // Popup for writing a new note (note = null) or editing an existing one.
 // onSaved(note) after create/update, onRemoved(note) after delete,
@@ -111,6 +112,7 @@ export default function NoteEditor({ note, categoryId, onSaved, onRemoved, onMov
           <span className="spacer" />
           {!isNew && (
             <>
+              <SavedItemActions itemType="note" itemId={note.id} label="note" />
               <button type="button" onClick={() => setMoving(true)} disabled={busy}>
                 Move
               </button>

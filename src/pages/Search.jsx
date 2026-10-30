@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import FileViewer from '../components/FileViewer'
+import Icon from '../components/Icon'
 import Loading from '../components/Loading'
 import NoteEditor from '../components/NoteEditor'
 import { searchFiles } from '../lib/files'
@@ -57,7 +58,7 @@ export default function Search() {
           {results.notes.map((n) => (
             <li key={`note-${n.id}`} className="row">
               <button className="link" onClick={() => setOpenNote(n)} style={{ overflowWrap: 'anywhere' }}>
-                📝 {noteTitle(n)}
+                <Icon name="note" /> {noteTitle(n)}
               </button>
               <span className="spacer" />
               <FolderLink folder={n.categories} />
@@ -66,7 +67,7 @@ export default function Search() {
           {results.files.map((f) => (
             <li key={`file-${f.id}`} className="row">
               <button className="link" onClick={() => setOpen(f)} style={{ overflowWrap: 'anywhere' }}>
-                {f.file_type.startsWith('image/') ? '🖼️' : '📄'} {f.filename}
+                <Icon name={f.file_type.startsWith('image/') ? 'image' : 'document'} /> {f.filename}
               </button>
               <span className="spacer" />
               <FolderLink folder={f.categories} />
@@ -95,7 +96,7 @@ export default function Search() {
 function FolderLink({ folder }) {
   return (
     <Link to={`/c/${folder.id}`} className="small">
-      🌸 {folder.name}
+      <Icon name="folder" /> {folder.name}
     </Link>
   )
 }

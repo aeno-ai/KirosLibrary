@@ -4,6 +4,8 @@ import Layout from './components/Layout'
 import Folder from './pages/Folder'
 import Login from './pages/Login'
 import Search from './pages/Search'
+import SavedItems from './pages/SavedItems'
+import { SavedItemsProvider } from './saved/SavedItemsProvider'
 
 export default function App() {
   return (
@@ -12,11 +14,13 @@ export default function App() {
       {/* Nested routes: RequireAuth checks the login, then Layout draws the
           header, then the matching page renders inside Layout's <Outlet />. */}
       <Route element={<RequireAuth />}>
-        <Route element={<Layout />}>
+        <Route element={<SavedItemsProvider><Layout /></SavedItemsProvider>}>
           <Route index element={<Folder />} />
           {/* :id is a URL parameter, read with useParams() in Folder. */}
           <Route path="c/:id" element={<Folder />} />
           <Route path="search" element={<Search />} />
+          <Route path="favorites" element={<SavedItems />} />
+          <Route path="pinned" element={<SavedItems mode="pins" />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

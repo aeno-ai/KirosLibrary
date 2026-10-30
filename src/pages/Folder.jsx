@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
-import Cat from '../components/Dog'
+import Icon from '../components/Icon'
+import KiroMascot from '../components/KiroMascot'
 import Loading from '../components/Loading'
 import Gallery from '../components/Gallery'
 import LinkDialog from '../components/LinkDialog'
 import NameDialog from '../components/NameDialog'
 import NoteEditor from '../components/NoteEditor'
+import QuickAccess from '../components/QuickAccess'
 import UploadButton from '../components/UploadButton'
 import {
   childrenOf,
@@ -16,6 +18,7 @@ import {
   renameCategory,
   useCategories,
 } from '../lib/categories'
+import SavedItemActions from '../saved/SavedItemActions'
 
 // One page for both "/" (top level, no id) and "/c/:id" (inside a category).
 export default function Folder() {
@@ -76,9 +79,10 @@ export default function Folder() {
 
       <div className="row title-row">
         <h1>{current ? current.name : 'Our Library'}</h1>
+        {current && <SavedItemActions itemType="folder" itemId={current.id} label={`folder ${current.name}`} />}
         <span className="spacer" />
         <button onClick={() => setDialog('new')} disabled={busy}>
-          ＋ New folder
+          <Icon name="plus" /> New folder
         </button>
         {current && (
           <>
@@ -94,11 +98,14 @@ export default function Folder() {
 
       {error && <p className="error">{error}</p>}
 
+      {!current && <QuickAccess />}
+
       {children.length > 0 && (
         <ul className="folders">
           {children.map((c) => (
-            <li key={c.id}>
-              <Link to={`/c/${c.id}`}>🌸 {c.name}</Link>
+            <li key={c.id} className="folder-card">
+              <Link to={`/c/${c.id}`}><Icon name="folder" /> {c.name}</Link>
+              <SavedItemActions itemType="folder" itemId={c.id} label={`folder ${c.name}`} />
             </li>
           ))}
         </ul>
@@ -106,7 +113,7 @@ export default function Folder() {
 
       {!current && children.length === 0 && (
         <div className="empty">
-          <Cat name="sleep" size={150} label="sleeping cat" />
+          <KiroMascot mood="sleep" size={150} label="Kiro sleeping" />
           <p className="muted">No folders yet. Make one to start uploading!</p>
         </div>
       )}
@@ -118,10 +125,10 @@ export default function Folder() {
               easy reach of a thumb; on desktop it sits in the page. */}
           <div className="add-bar">
             <button className="fab note-fab" onClick={() => setDialog('note')}>
-              📝 Note
+              <Icon name="note" /> Note
             </button>
             <button className="fab link-fab" onClick={() => setDialog('link')}>
-              🔗 Link
+              <Icon name="link" /> Link
             </button>
             <UploadButton categoryId={id} onUploaded={() => setChanges((n) => n + 1)} />
           </div>

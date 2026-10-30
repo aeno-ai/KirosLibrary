@@ -8,7 +8,7 @@
 
 // Bump VERSION whenever this file's logic changes; activate() then deletes
 // the old caches.
-const VERSION = 'v2'
+const VERSION = 'v4'
 const SHELL = `shell-${VERSION}` // index.html + the built JS/CSS
 const DATA = `data-${VERSION}` // Supabase API reads (category and file lists)
 const MEDIA = `media-${VERSION}` // thumbnails and full images
@@ -30,7 +30,14 @@ async function precacheShell() {
   // file it references, so the very next launch already works offline.
   const html = await response.text()
   const assets = [...html.matchAll(/\/assets\/[^"']+/g)].map((m) => m[0])
-  await cache.addAll(['/manifest.webmanifest', '/favicon.svg', ...assets])
+  await cache.addAll([
+    '/manifest.webmanifest',
+    '/favicon.svg',
+    '/kiro/kiro-idle.webp',
+    '/kiro/kiro-happy.webp',
+    '/kiro/kiro-sleep.webp',
+    ...assets,
+  ])
 }
 
 // activate: the new version is now in charge. Clean up old versions' caches.
@@ -62,8 +69,13 @@ self.addEventListener('fetch', (event) => {
     // Built files have a content hash in their name (index-DjWwUsgN.js): a
     // name never changes content, so the cached copy is always right.
     event.respondWith(cacheFirst(request, SHELL, request))
-  } else if (url.origin === self.location.origin && url.pathname.startsWith('/cats/')) {
-    event.respondWith(staleWhileRevalidate(request, SHELL))
+  } else if (url.origin === self.location.origin && url.pathname.startsWith('/kiro/')) {
+    event.respondWith(staleWhileRevalidate(request, SHELL, 'image/'))
+  } else if (url.pathname === '/rest/v1/saved_items') {
+    // Favorites and pins are private to one account. Cache keys do not safely
+    // vary by the Supabase Authorization header, so never store this response.
+    // A new worker version also removes any old cached saved-item data.
+    event.respondWith(fetch(request))
   } else if (url.pathname.startsWith('/rest/v1/')) {
     // Supabase database reads: fresh when online, last copy when offline.
     event.respondWith(networkFirst(request, DATA, request))
@@ -72,17 +84,16 @@ self.addEventListener('fetch', (event) => {
   }
 })
 
-// Cat animations: answer instantly from the cache, and quietly fetch a fresh
-// copy in the background for next time ("stale-while-revalidate"). If you
-// swap a cat file for a new one, it shows up on the following launch.
-async function staleWhileRevalidate(request, cacheName) {
+// Kiro images answer instantly from the cache, and quietly fetch a fresh copy
+// in the background for the following launch ("stale-while-revalidate").
+async function staleWhileRevalidate(request, cacheName, contentType = 'json') {
   const cache = await caches.open(cacheName)
   const cached = await cache.match(request)
   const refresh = fetch(request)
     .then((response) => {
-      // A missing cat file gets index.html back (the SPA rewrite, status 200),
-      // so check that it really is JSON before caching it.
-      if (response.ok && response.headers.get('content-type')?.includes('json')) {
+      // A missing public file can get index.html back (the SPA rewrite,
+      // status 200), so cache only the expected asset type.
+      if (response.ok && response.headers.get('content-type')?.includes(contentType)) {
         cache.put(request, response.clone())
       }
       return response

@@ -5,6 +5,7 @@ import { useSession } from '../auth/session'
 import { useQueue } from '../lib/useQueue'
 import { retryFailed, startSync } from '../lib/sync'
 import ConfirmDialog from './ConfirmDialog'
+import Icon from './Icon'
 
 export default function Layout() {
   const session = useSession()
@@ -74,16 +75,17 @@ export default function Layout() {
     <>
       <header className="topbar">
         <Link to="/" className="brand">
-          <span aria-hidden="true">📁</span>
+          <Icon name="folder" />
           Kiro's Library
         </Link>
         {/* className="search"/"actions" place these in the header grid
             (see .topbar in index.css): one row on wide screens, two on phones. */}
         <form className="search" onSubmit={handleSearch} role="search">
+          <Icon name="search" className="search-icon" />
           <input
             name="q"
             type="search"
-            placeholder="🔍 Search files & notes"
+            placeholder="Search files & notes"
             // defaultValue (not value): the browser owns the text, React only
             // sets the starting value. Fine here since we only read it on submit.
             defaultValue={params.get('q') ?? ''}
@@ -95,7 +97,10 @@ export default function Layout() {
           ) : (
             <span className="sync-pill" role="status" aria-live="polite">{syncStatus}</span>
           )}
-          {/* On phones only the 💗 shows; aria-label keeps it readable for
+          <Link to="/favorites" className="icon-link favorites-nav" title="Favorites" aria-label="Favorites">
+            <Icon name="heart" /><span className="wide-only small"> Favorites</span>
+          </Link>
+          {/* On phones only the sign-out icon shows; aria-label keeps it readable for
               screen readers, which don't see what CSS hides visually. */}
           <button
             className="link icon-link"
@@ -103,7 +108,7 @@ export default function Layout() {
             title={session.user.email}
             aria-label="Sign out"
           >
-            💗<span className="wide-only small"> Sign out</span>
+            <Icon name="signOut" /><span className="wide-only small"> Sign out</span>
           </button>
         </div>
       </header>

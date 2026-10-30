@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { childrenOf, pathTo, useCategories } from '../lib/categories'
+import Icon from './Icon'
 import Loading from './Loading'
 
 // Folder browser used by the file viewer and the note editor. You drill into
@@ -38,14 +39,14 @@ export default function MovePicker({ currentCategoryId, onMove, onCancel }) {
         {at && (
           <li>
             <button type="button" onClick={() => setAt(here.parent_id)}>
-              ⬆ Up
+              <Icon name="arrowUp" /> Up
             </button>
           </li>
         )}
         {children.map((c) => (
           <li key={c.id}>
             <button type="button" onClick={() => setAt(c.id)}>
-              🌸 {c.name}
+              <Icon name="folder" /> {c.name}
             </button>
           </li>
         ))}

@@ -77,6 +77,16 @@ button.primary {
   color: #fff;
 }
 
+/* The upload label looks like a primary button. */
+.primary-button {
+  display: inline-block;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
 button.danger {
   color: var(--danger);
 }

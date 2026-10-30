@@ -17,7 +17,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 | P1 | Supabase: tables, bucket, RLS (supabase/schema.sql + dashboard steps) | DONE (SQL written; Aeno runs it in the dashboard) |
 | P2 | Supabase client, login, auth gate, routing | DONE |
 | P3 | Categories: create, rename, delete, nesting, breadcrumbs | DONE |
-| P4 | Upload, gallery, thumbnails | TODO |
+| P4 | Upload, gallery, thumbnails | DONE |
 | P5 | Move and search files | TODO |
 | P6 | PWA: manifest, icons, service worker | TODO |
 | P7 | Deploy prep: .htaccess, InfinityFree upload steps | TODO |

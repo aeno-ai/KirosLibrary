@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
+import Gallery from '../components/Gallery'
+import UploadButton from '../components/UploadButton'
 import {
   childrenOf,
   createCategory,
@@ -18,6 +20,8 @@ export default function Folder() {
   const [newName, setNewName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  // Bumped after each upload; part of the Gallery's key so it reloads.
+  const [uploads, setUploads] = useState(0)
 
   if (loadError) return <p className="error">{loadError}</p>
   if (!categories) return <p className="muted">Loading…</p>
@@ -117,6 +121,14 @@ export default function Folder() {
 
       {!current && children.length === 0 && (
         <p className="muted">No categories yet. Create one to start uploading.</p>
+      )}
+
+      {/* Files always belong to a category, so the top level has none. */}
+      {current && (
+        <>
+          <UploadButton categoryId={id} onUploaded={() => setUploads((n) => n + 1)} />
+          <Gallery key={`${id}:${uploads}`} categoryId={id} />
+        </>
       )}
     </>
   )

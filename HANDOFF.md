@@ -15,7 +15,7 @@ TODO, IN PROGRESS, DONE (code committed), REVIEWED (Aeno tested it)
 |----|-------|--------|
 | P0 | Cleanup: commit demo strip, .env.example, untrack dist, remove demo assets | DONE |
 | P1 | Supabase: tables, bucket, RLS (supabase/schema.sql + dashboard steps) | DONE (SQL written; Aeno runs it in the dashboard) |
-| P2 | Supabase client, login, auth gate, routing | TODO |
+| P2 | Supabase client, login, auth gate, routing | DONE |
 | P3 | Categories: create, rename, delete, nesting, breadcrumbs | TODO |
 | P4 | Upload, gallery, thumbnails | TODO |
 | P5 | Move and search files | TODO |

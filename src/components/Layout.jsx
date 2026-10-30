@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/session'
 import { useQueue } from '../lib/useQueue'
 import { retryFailed, startSync } from '../lib/sync'
-import Cat from './Dog'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function Layout() {
@@ -75,7 +74,7 @@ export default function Layout() {
     <>
       <header className="topbar">
         <Link to="/" className="brand">
-          <Cat name="peek" size={36} label="" />
+          <span aria-hidden="true">📁</span>
           Kiro's Library
         </Link>
         {/* className="search"/"actions" place these in the header grid

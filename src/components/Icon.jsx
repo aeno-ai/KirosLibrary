@@ -12,6 +12,12 @@ const PATHS = {
       <path d="M14 3v5h5M9 13h6M9 17h6" />
     </>
   ),
+  edit: (
+    <>
+      <path d="M4 20h4L19 9l-4-4L4 16z" />
+      <path d="m13.5 6.5 4 4" />
+    </>
+  ),
   external: (
     <>
       <path d="M14 5h5v5M19 5l-8 8" />
@@ -36,6 +42,13 @@ const PATHS = {
     <>
       <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
       <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
     </>
   ),
   note: (
@@ -66,6 +79,12 @@ const PATHS = {
       <path d="m16 16 4 4" />
     </>
   ),
+  trash: (
+    <>
+      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+      <path d="M10 11v6M14 11v6" />
+    </>
+  ),
   signOut: (
     <>
       <path d="M10 5H5v14h5" />
@@ -76,7 +95,8 @@ const PATHS = {
 
 export default function Icon({ name, size = '1em', className = '', label, filled = false }) {
   const path = PATHS[name] ?? PATHS.document
-  const solid = filled && name === 'heart'
+  // Only shapes that read well solid get filled (a pinned pin, a loved heart).
+  const solid = filled && (name === 'heart' || name === 'pin')
   return (
     <svg
       className={`icon ${className}`.trim()}

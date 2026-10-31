@@ -5,7 +5,8 @@ import { processQueue } from '../lib/sync'
 import Icon from './Icon'
 import KiroMascot from './KiroMascot'
 
-export default function UploadButton({ categoryId, onUploaded }) {
+// onPick (optional) runs once files are chosen, e.g. to fold up the add menu.
+export default function UploadButton({ categoryId, onUploaded, onPick }) {
   const [progress, setProgress] = useState(null)
   const [failures, setFailures] = useState([])
 
@@ -14,6 +15,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
     // Clear the input, otherwise picking the same file again fires no change.
     e.target.value = ''
     if (files.length === 0) return
+    onPick?.()
 
     setFailures([])
     setProgress({ done: 0, total: files.length })
@@ -75,7 +77,7 @@ export default function UploadButton({ categoryId, onUploaded }) {
       ) : (
         // A <label> wrapping a hidden file input: tapping the label opens the
         // picker, so it can be styled like a button.
-        <label className="fab">
+        <label className="fab add-option">
           <Icon name="plus" /> Upload
           <input type="file" multiple accept={ACCEPT} onChange={handleChange} hidden />
         </label>

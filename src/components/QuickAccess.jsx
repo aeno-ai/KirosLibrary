@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Icon from './Icon'
 import SavedItemCards from '../saved/SavedItemCards'
 import useSavedItemSources from '../saved/useSavedItemSources'
 import useSavedItems from '../saved/useSavedItems'
@@ -13,9 +14,9 @@ export default function QuickAccess() {
   return (
     <section className="quick-access" aria-labelledby="quick-access-heading">
       <div className="row">
-        <h2 id="quick-access-heading">Pinned Items</h2>
+        <h2 id="quick-access-heading"><Icon name="pin" /> Quick Access</h2>
         <span className="spacer" />
-        {hasMore && <Link to="/pinned" className="small">View all pins</Link>}
+        {hasMore && <Link to="/pinned" className="small">View all pinned</Link>}
       </div>
       {loading && <p className="muted small">Loading your pinned items…</p>}
       {error && <p className="error">Couldn’t load Quick Access: {error}</p>}

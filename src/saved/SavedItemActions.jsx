@@ -10,7 +10,6 @@ export default function SavedItemActions({ itemType, itemId, label }) {
     setPinned,
   } = useSavedItems()
   const pinned = isPinned(itemType, itemId)
-  const favoriteBusy = isPending(itemType, itemId, 'favorite')
   const pinBusy = isPending(itemType, itemId, 'pinned')
   const favoriteError = operationError(itemType, itemId, 'favorite')
   const pinError = operationError(itemType, itemId, 'pinned')

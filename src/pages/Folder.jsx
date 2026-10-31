@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import ActionMenu from '../components/ActionMenu'
+import AddBar from '../components/AddBar'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Icon from '../components/Icon'
 import KiroMascot from '../components/KiroMascot'
@@ -9,7 +11,6 @@ import LinkDialog from '../components/LinkDialog'
 import NameDialog from '../components/NameDialog'
 import NoteEditor from '../components/NoteEditor'
 import QuickAccess from '../components/QuickAccess'
-import UploadButton from '../components/UploadButton'
 import {
   childrenOf,
   createCategory,
@@ -77,28 +78,45 @@ export default function Folder() {
     <>
       {current && <Breadcrumbs path={path} />}
 
+      {/* Title row. Inside a folder, the folder's own actions (new subfolder,
+          rename, delete) are tucked into a ⋯ menu so they don't crowd the
+          title or sit one mis-tap away on a phone. */}
       <div className="row title-row">
         <h1>{current ? current.name : 'Our Library'}</h1>
-        {current && <SavedItemActions itemType="folder" itemId={current.id} label={`folder ${current.name}`} />}
-        <span className="spacer" />
-        <button onClick={() => setDialog('new')} disabled={busy}>
-          <Icon name="plus" /> New folder
-        </button>
         {current && (
           <>
-            <button onClick={() => setDialog('rename')} disabled={busy}>
-              Rename
-            </button>
-            <button className="danger" onClick={handleDelete} disabled={busy}>
-              Delete
-            </button>
+            <SavedItemActions itemType="folder" itemId={current.id} label={`folder ${current.name}`} />
+            <ActionMenu label={`Options for folder ${current.name}`}>
+              <button onClick={() => setDialog('new')} disabled={busy}>
+                <Icon name="plus" /> New folder inside
+              </button>
+              <button onClick={() => setDialog('rename')} disabled={busy}>
+                <Icon name="edit" /> Rename
+              </button>
+              <button className="danger" onClick={handleDelete} disabled={busy}>
+                <Icon name="trash" /> Delete
+              </button>
+            </ActionMenu>
           </>
         )}
       </div>
 
       {error && <p className="error">{error}</p>}
 
-      {!current && <QuickAccess />}
+      {/* Top level: pinned items first, then the folder list with its own
+          "New folder" button, so the first thing you see is what you use most. */}
+      {!current && (
+        <>
+          <QuickAccess />
+          <div className="row section-head">
+            <h2>Folders</h2>
+            <span className="spacer" />
+            <button onClick={() => setDialog('new')} disabled={busy}>
+              <Icon name="plus" /> New folder
+            </button>
+          </div>
+        </>
+      )}
 
       {children.length > 0 && (
         <ul className="folders">
@@ -124,17 +142,12 @@ export default function Folder() {
       {/* Files, notes, and links belong to folders, so the top level has none. */}
       {current && (
         <>
-          {/* The add buttons. On phones .add-bar floats bottom-right, within
-              easy reach of a thumb; on desktop it sits in the page. */}
-          <div className="add-bar">
-            <button className="fab note-fab" onClick={() => setDialog('note')}>
-              <Icon name="note" /> Note
-            </button>
-            <button className="fab link-fab" onClick={() => setDialog('link')}>
-              <Icon name="link" /> Link
-            </button>
-            <UploadButton categoryId={id} onUploaded={() => setChanges((n) => n + 1)} />
-          </div>
+          <AddBar
+            categoryId={id}
+            onNote={() => setDialog('note')}
+            onLink={() => setDialog('link')}
+            onUploaded={() => setChanges((n) => n + 1)}
+          />
           <Gallery
             key={`${id}:${changes}`}
             categoryId={id}

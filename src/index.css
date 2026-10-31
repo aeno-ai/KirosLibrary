@@ -249,18 +249,83 @@ button:disabled {
   display: none;
 }
 
-/* Page title row. On phones the title takes a full line of its own and the
-   buttons wrap underneath, instead of squeezing beside it. */
+/* Page title row: the title grows to fill the line and the small icon
+   controls (pin, ⋯) stay on its right. flex-basis 0 + min-width 0 let a long
+   folder name wrap onto more lines instead of pushing the icons off screen. */
+.title-row {
+  flex-wrap: nowrap;
+}
+
 .title-row h1 {
-  flex-basis: 100%;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.title-row .spacer {
-  display: none;
+/* "Folders" heading + New folder button on the home page. */
+.section-head h2 {
+  font-size: 1.05rem;
 }
 
-.title-row button {
-  padding-inline: 0.85rem;
+.quick-access h2 .icon {
+  color: var(--accent);
+}
+
+/* ---------- ⋯ action menu ---------- */
+
+.menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.menu-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  padding: 0;
+  font-size: 1.3rem;
+}
+
+.menu-toggle[aria-expanded='true'] {
+  border-color: var(--carnation);
+  background: var(--accent-soft);
+}
+
+/* The list drops down under the button, lined up with its right edge so it
+   never runs off the right side of a phone screen. */
+.menu-panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  min-width: 12.5rem;
+  padding: 0.35rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  animation: pop-in 0.15s ease-out;
+}
+
+.menu-panel button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
 }
 
 .card {
@@ -445,17 +510,13 @@ button:disabled {
     box-shadow 0.15s;
 }
 
-.new-folder input {
-  flex: 1;
-  width: auto;
-}
-
 .folder-card {
   position: relative;
 }
 
 .folder-card > a {
-  padding-right: 5.65rem;
+  /* Room on the right for the pin button that floats over the card. */
+  padding-right: 3.65rem;
 }
 
 .folder-name {
@@ -553,9 +614,10 @@ progress {
 
 /* ---------- add bar: note, link, and upload ---------- */
 
-/* Phones: a column of buttons floating bottom-right, above the iPhone home
-   bar, reachable with a thumb from anywhere on the page. FAB = "floating
-   action button". */
+/* Phones and tablets: one round "+" floating bottom-right, above the iPhone
+   home bar, reachable with a thumb from anywhere on the page. Tapping it
+   opens Note / Link / Upload in a column above it (a "speed dial"; see
+   AddBar.jsx). FAB = "floating action button". */
 .add-bar {
   position: fixed;
   right: 1rem;
@@ -593,6 +655,36 @@ progress {
   background: var(--link-bg);
   color: var(--link-fg);
   border: 2px solid var(--link-edge);
+}
+
+/* The round "+" that opens and closes the speed dial. Its plus turns 45° into
+   an ×, so the same button reads as "close" while open. */
+.add-toggle {
+  justify-content: center;
+  width: 60px;
+  min-height: 60px;
+  padding: 0;
+  font-size: 1.7rem;
+}
+
+.add-toggle .icon {
+  transition: transform 0.2s;
+}
+
+.add-bar.open .add-toggle .icon {
+  transform: rotate(45deg);
+}
+
+/* Below desktop the options only show while the dial is open. Upload
+   progress and error cards aren't .add-option, so they always stay visible. */
+@media (max-width: 1023px) {
+  .add-bar:not(.open) .add-option {
+    display: none;
+  }
+
+  .add-bar.open .add-option {
+    animation: pop-in 0.18s ease-out both;
+  }
 }
 
 /* Upload progress / errors pop up as a small card above the buttons. */
@@ -705,7 +797,7 @@ progress {
   line-height: 1.55;
 }
 
-/* ---------- favorites and pins ---------- */
+/* ---------- pins and Quick Access ---------- */
 
 .quick-access,
 .saved-items-page {
@@ -749,7 +841,7 @@ progress {
   min-width: 0;
   align-items: center;
   gap: 0.65rem;
-  padding: 0.55rem 5.65rem 0.55rem 0.65rem;
+  padding: 0.55rem 3.65rem 0.55rem 0.65rem;
   border: none;
   border-radius: calc(var(--radius) - 2px);
   background: none;
@@ -838,11 +930,6 @@ progress {
   line-height: 1;
 }
 
-.saved-item-action.favorite.active {
-  background: color-mix(in srgb, #ef709f 24%, var(--card));
-  color: var(--accent);
-}
-
 .saved-item-action.pin.active {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -909,7 +996,8 @@ progress {
 }
 
 @media (hover: hover) {
-  .saved-item-action:hover:not(:disabled) {
+  .saved-item-action:hover:not(:disabled),
+  .menu-panel button:hover:not(:disabled) {
     background: var(--accent-soft);
     box-shadow: none;
     transform: none;
@@ -935,7 +1023,7 @@ progress {
 
   .folder-card > a,
   .saved-item-main {
-    padding-right: 6.25rem;
+    padding-right: 3.9rem;
   }
 
   .saved-item-action,
@@ -1095,14 +1183,6 @@ dialog::backdrop {
     display: inline;
   }
 
-  .title-row h1 {
-    flex-basis: auto;
-  }
-
-  .title-row .spacer {
-    display: block;
-  }
-
   .page {
     padding: 1.5rem;
     padding-bottom: 6rem;
@@ -1167,6 +1247,10 @@ dialog::backdrop {
 
   .fab {
     box-shadow: var(--shadow);
+  }
+
+  .add-toggle {
+    display: none;
   }
 
   .page {
